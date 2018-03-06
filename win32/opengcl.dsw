@@ -1,0 +1,182 @@
+Microsoft Developer Studio Workspace File, Format Version 6.00
+# WARNING: DO NOT EDIT OR DELETE THIS WORKSPACE FILE!
+
+###############################################################################
+
+Project: "all"=.\all.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name exque
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name exsocket
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name exthread
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name extime
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name extok
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name exmmap
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name exmbox
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "exmbox"=.\exmbox.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "exmmap"=.\exmmap.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "exque"=.\exque.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "exsocket"=.\exsocket.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "exthread"=.\exthread.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "extime"=.\extime.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "extok"=.\extok.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name opengcl_dll
+    End Project Dependency
+}}}
+
+###############################################################################
+
+Project: "opengcl_dll"=.\opengcl_dll.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "opengcl_static"=.\opengcl_static.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Global:
+
+Package=<5>
+{{{
+}}}
+
+Package=<3>
+{{{
+}}}
+
+###############################################################################
+
