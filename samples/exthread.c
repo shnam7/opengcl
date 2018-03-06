@@ -17,7 +17,7 @@
 
 void *foo(void *data)
 {
-	int val = (int)data;
+	int val = (unsigned long)data;
 	printf( "Foo=%d\n", val );
 	//for ( ;; )
 		printf( "Hello %d\n", val );

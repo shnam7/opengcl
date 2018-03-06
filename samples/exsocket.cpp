@@ -22,7 +22,7 @@
 static void *_serv_d(void *data)
 {
 	GThread *pT = GThread::getCurrent();
-	GSocket gs( (socket_t)data );
+	GSocket gs( *(socket_t *)data );
 	if ( !gs.isValid() ) { delete pT; return 0; }
 	gs.setNBIO( true );
 
@@ -79,7 +79,7 @@ void _server()
 		printf( "client from %s accepted.\n", inet_ntoa(sa.sin_addr) );
 
 		GThread *pT = new GThread;
-		pT->start( _serv_d, (void *)sock );
+		pT->start( _serv_d, (void *)&sock );
 /*		pid_t pid = fork();
 		if ( pid == 0 )	// child process
 		{

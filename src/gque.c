@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <memory.h>
 
-gque_t *gque_create(unsigned item_size, unsigned capacity)
+gque_t *gque_create(size_t item_size, size_t capacity)
 {
 	char *mem = (char *)malloc( gque_calc_bufsize(item_size, capacity) );
 	if ( !mem ) return 0;
@@ -50,7 +50,7 @@ int gque_delete(gque_t *gq)
 	return 1;
 }
 
-gque_t *gque_init(unsigned item_size, unsigned capacity, char *buf)
+gque_t *gque_init(size_t item_size, size_t capacity, char *buf)
 {
 	gque_t *gq = (gque_t *)buf;
 	gq->item_size = item_size;
@@ -65,7 +65,7 @@ gque_t *gque_init(unsigned item_size, unsigned capacity, char *buf)
 
 int gque_push_tail(gque_t *gq, const char *item)
 {
-	unsigned npos = gq->tail + gq->item_size;
+	size_t npos = gq->tail + gq->item_size;
 	if ( npos == gq->end ) npos = gq->begin;
 	if ( npos == gq->head ) return 0;		/* full */
 	memcpy( ((char *)gq)+gq->tail, item, gq->item_size );
@@ -99,35 +99,35 @@ int gque_shift_tail(gque_t *gq, int n)
 
 int gque_is_full(gque_t *gq)
 {
-	unsigned npos = gq->tail + gq->item_size;
+	size_t npos = gq->tail + gq->item_size;
 	if ( npos == gq->end ) npos = gq->begin;
 	return ( npos == gq->head );
 }
 
-unsigned gque_get_entries(gque_t *gq)
+size_t gque_get_entries(gque_t *gq)
 {
-	unsigned n = ( gq->head<=gq->tail ) ? (gq->tail-gq->head)
+	size_t n = ( gq->head<=gq->tail ) ? (gq->tail-gq->head)
 			: (gq->end-gq->head) + (gq->tail-gq->begin);
 	return n / gq->item_size;
 }
 
-unsigned gque_get_linear_entries(gque_t *gq)
+size_t gque_get_linear_entries(gque_t *gq)
 {
-	unsigned n = ( gq->head<=gq->tail ) ? (gq->tail-gq->head)
+	size_t n = ( gq->head<=gq->tail ) ? (gq->tail-gq->head)
 			: (gq->end-gq->head);
 	return n / gq->item_size;
 }
 
-unsigned gque_get_rooms(gque_t *gq)
+size_t gque_get_rooms(gque_t *gq)
 {
 	int n = ( gq->head>gq->tail ) ? (gq->head-gq->tail)
 			: (gq->end-gq->tail) + (gq->head-gq->begin);
 	return (n / gq->item_size) - 1;
 }
 
-unsigned gque_get_linear_rooms(gque_t *gq)
+size_t gque_get_linear_rooms(gque_t *gq)
 {
-	unsigned n;
+	size_t n;
 
 	if ( gq->head>gq->tail )
 		return (gq->head-gq->tail)/gq->item_size - 1;
@@ -137,10 +137,10 @@ unsigned gque_get_linear_rooms(gque_t *gq)
 }
 
 /* #include <stdio.h> */
-//gcl_api int gque_request_linear_rooms(gque_t *gq, unsigned size, int fix_que)
-gcl_api int gque_request_linear_rooms(gque_t *gq, unsigned size)
+//gcl_api int gque_request_linear_rooms(gque_t *gq, size_t size, int fix_que)
+gcl_api int gque_request_linear_rooms(gque_t *gq, size_t size)
 {
-	unsigned rooms, linear;
+	size_t rooms, linear;
 
 	/*
 	printf( "---------------GGGGG\n" );

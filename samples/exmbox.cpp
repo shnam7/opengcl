@@ -23,8 +23,8 @@ void *foo_put(void *data)
 	
 	int id = s_id++;
 
-	int hmb = (int)data;
-	printf( "FOO: %d\n", hmb );
+	size_t hmb = *(size_t *)data;
+	printf( "FOO: %zd\n", hmb );
 
 	const char *hello = "Hello!!!";
 	int count = 0;
@@ -50,7 +50,7 @@ void *foo_put(void *data)
 
 void *foo_get(void *data)
 {
-	int hmb = (int)data;
+	size_t hmb = *(size_t *)data;
 
 	int id = s_id++ + 100;
 	for ( ;; )
@@ -97,8 +97,8 @@ int main()
 	int i;
 	for (i=0; i<MAX_THREAD; ++i)
 	{
-		pt[i].start( foo_put, (void *)hmb );
-		gt[i].start( foo_get, (void *)hmb );
+		pt[i].start( foo_put, (void *)&hmb );
+		gt[i].start( foo_get, (void *)&hmb );
 	}
 
 	gtime_msleep(10000);

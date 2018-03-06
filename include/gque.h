@@ -35,6 +35,8 @@
 #ifndef __GQUE_H
 #define __GQUE_H
 
+#include <stddef.h>
+
 #if defined( _WIN32 ) && defined(_DLL)
 #ifdef GCL_EXPORTS
 #define gcl_api		__declspec(dllexport)
@@ -49,12 +51,12 @@
  *	GQue: the type independent queue
  *--------------------------------------------------------------------*/
 typedef struct _qque_t {
-	unsigned	begin;
-	unsigned	end;
-	unsigned	head;
-	unsigned	tail;
-	unsigned	item_size;
-	unsigned	remainder;
+	size_t		begin;
+	size_t		end;
+	size_t		head;
+	size_t		tail;
+	size_t		item_size;
+	size_t		remainder;
 	void		*opt;		/* optional param, usally for locking */
 } gque_t;
 
@@ -63,23 +65,23 @@ typedef struct _qque_t {
 extern "C" {
 #endif
 
-gcl_api gque_t *gque_create(unsigned item_size, unsigned capacity);
+gcl_api gque_t *gque_create(size_t item_size, size_t capacity);
 
 gcl_api int gque_delete(gque_t *gq);
 
-static inline unsigned gque_calc_bufsize(unsigned item_size, unsigned capacity)
+static inline size_t gque_calc_bufsize(size_t item_size, size_t capacity)
 {
 	return sizeof(gque_t)+(capacity+1)*item_size;
 }
 
-static inline unsigned gque_calc_capacity(unsigned item_size, unsigned bufsize)
+static inline size_t gque_calc_capacity(size_t item_size, size_t bufsize)
 {
 	return (bufsize-sizeof(gque_t))/item_size - 1;
 }
 
-gcl_api gque_t *gque_init(unsigned item_size, unsigned capacity, char *buf);
+gcl_api gque_t *gque_init(size_t item_size, size_t capacity, char *buf);
 
-static inline gque_t *gque_init2(unsigned item_size, char *buf, unsigned bufsize)
+static inline gque_t *gque_init2(size_t item_size, char *buf, size_t bufsize)
 	{ return gque_init(item_size, gque_calc_capacity(item_size, bufsize), buf); }
 
 static inline void gque_reset(gque_t *gq)
@@ -100,7 +102,7 @@ static inline char *gque_tail(gque_t *gq)
 static inline int gque_item_size(gque_t *gq)
 	{ return gq->item_size; }
 
-static inline unsigned gque_remainder(gque_t *gq)
+static inline size_t gque_remainder(gque_t *gq)
 	{ return gq->remainder; }
 
 
@@ -124,21 +126,21 @@ static inline int gque_is_empty(gque_t *gq)		// return type is bool
 
 gcl_api int gque_is_full(gque_t *gq);		// return type is bool
 
-gcl_api unsigned gque_get_entries(gque_t *gq);
+gcl_api size_t gque_get_entries(gque_t *gq);
 
-gcl_api unsigned gque_get_linear_entries(gque_t *gq);
+gcl_api size_t gque_get_linear_entries(gque_t *gq);
 
-gcl_api unsigned gque_get_rooms(gque_t *gq);
+gcl_api size_t gque_get_rooms(gque_t *gq);
 
-gcl_api unsigned gque_get_linear_rooms(gque_t *gq);
+gcl_api size_t gque_get_linear_rooms(gque_t *gq);
 
-static inline unsigned gque_get_capacity(gque_t *gq)
+static inline size_t gque_get_capacity(gque_t *gq)
 {
 	return ((gq->end-gq->begin)/gq->item_size) - 1;
 }
 
 gcl_api int gque_request_linear_rooms(gque_t *gq,
-		unsigned size);
+		size_t size);
 
 #ifdef __cplusplus
 };
@@ -156,19 +158,19 @@ public:
 	~GQue() { destroy(); }
 
 	//--- manipulators
-	bool create(unsigned item_size, unsigned capacity)
+	bool create(size_t item_size, size_t capacity)
 	{
 		if (m_q) gque_delete(m_q);
 		m_q=gque_create(item_size, capacity);
 		return m_q != 0;
 	}
-	bool create(unsigned item_size, unsigned capacity, char *qbuf)
+	bool create(size_t item_size, size_t capacity, char *qbuf)
 	{
 		if (m_q) gque_delete(m_q);
 		m_q = gque_init(item_size, capacity, qbuf);
 		return m_q != 0;
 	}
-	bool create(unsigned item_size, char *qbuf, unsigned bufsize)
+	bool create(size_t item_size, char *qbuf, size_t bufsize)
 	{
 		if (m_q) gque_delete(m_q);
 		m_q = gque_init2(item_size, qbuf, bufsize);
@@ -183,7 +185,7 @@ public:
 	void popAll() const {  gque_pop_all(m_q); }
 	bool shiftHead(int n) { return gque_shift_head(m_q, n) != 0; }
 	bool shiftTail(int n) { return gque_shift_tail(m_q, n) != 0; }
-	bool requestLinearRooms(unsigned size)
+	bool requestLinearRooms(size_t size)
 		{ return gque_request_linear_rooms(m_q, size) != 0; }
 	bool attach(gque_t *gq)
 	{
@@ -200,16 +202,16 @@ public:
 	char *tail() const { return gque_tail(m_q); }
 	char *begin() const { return gque_begin(m_q); }
 	char *end() const { return gque_end(m_q); }
-	unsigned itemSize() { return gque_item_size(m_q); }
-	unsigned remainder() { return gque_remainder(m_q); }
+	size_t itemSize() { return gque_item_size(m_q); }
+	size_t remainder() { return gque_remainder(m_q); }
 
 	bool isEmpty() const { return gque_is_empty(m_q) != 0; }
 	bool isFull() const { return gque_is_full(m_q) != 0; }
-	unsigned getEntries() const { return gque_get_entries(m_q); }
-	unsigned getLinearEntries() const { return gque_get_linear_entries(m_q); }
-	unsigned getRooms() const { return gque_get_rooms(m_q); }
-	unsigned getLinearRooms() const { return gque_get_linear_rooms(m_q); }
-	unsigned getCapacity() const { return gque_get_capacity(m_q); }
+	size_t getEntries() const { return gque_get_entries(m_q); }
+	size_t getLinearEntries() const { return gque_get_linear_entries(m_q); }
+	size_t getRooms() const { return gque_get_rooms(m_q); }
+	size_t getLinearRooms() const { return gque_get_linear_rooms(m_q); }
+	size_t getCapacity() const { return gque_get_capacity(m_q); }
 
 	bool isValid() const { return m_q != 0; }
 	gque_t *getQue() { return m_q; }

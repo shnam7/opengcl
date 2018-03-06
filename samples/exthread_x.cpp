@@ -161,15 +161,15 @@ int main()
 
 	void *retval = 0;;
 	gt.join( &retval );
-	printf( "ret=%d\n", (int)retval );
+	printf( "ret=%ld\n", (unsigned long)retval );
 
 	retval = 0;;
 	gt1.join( &retval );
-	printf( "ret=%d\n", (int)retval );
+	printf( "ret=%ld\n", (unsigned long)retval );
 
 	retval = 0;
 	gt2.join( &retval );
-	printf( "ret=%d\n", (int)retval );
+	printf( "ret=%ld\n", (unsigned long)retval );
 
 	gsem_getvalue( &sem, &val );
 	printf( "Finally, Sem value=%d\n", val );

@@ -16,18 +16,18 @@ int gque_test()
 	GQue gq;
 	gq.create( sizeof(int), 10 );
 
-	printf( "GQue: capacity=%d entries=%d rooms=%d\n",
+	printf( "GQue: capacity=%zd entries=%zd rooms=%zd\n",
 			gq.getCapacity(), gq.getEntries(), gq.getRooms() );
 
-	int count = 0;
+	size_t count = 0;
 	while ( !gq.isFull() )
 	{
 		int *pp = (int *)gq.tail();
 		*pp = count;
 		gq.shiftTail(1);
 
-		printf( "%d added, capacity=%d entries=%d "
-			"linear-entries=%d rooms=%d linear-rooms=%d\n",
+		printf( "%zd added, capacity=%zd entries=%zd "
+			"linear-entries=%zd rooms=%zd linear-rooms=%zd\n",
 			count, gq.getCapacity(), gq.getEntries(), gq.getLinearEntries(),
 			gq.getRooms(), gq.getLinearRooms() );
 
@@ -42,8 +42,8 @@ int gque_test()
 		int val = *pp;
 		gq.shiftHead(1);
 
-		printf( "%d poped, capacity=%d entries=%d "
-			"linear-entries=%d rooms=%d linear-rooms=%d\n",
+		printf( "%d poped, capacity=%zd entries=%zd "
+			"linear-entries=%zd rooms=%zd linear-rooms=%zd\n",
 			val, gq.getCapacity(), gq.getEntries(), gq.getLinearEntries(),
 			gq.getRooms(), gq.getLinearRooms() );
 	}
@@ -55,8 +55,8 @@ int gque_test()
 		*pp = count;
 		gq.shiftTail(1);
 
-		printf( "%d added, capacity=%d entries=%d "
-				"linear-entries=%d rooms=%d linear-rooms=%d\n",
+		printf( "%zd added, capacity=%zd entries=%zd "
+				"linear-entries=%zd rooms=%zd linear-rooms=%zd\n",
 			count, gq.getCapacity(), gq.getEntries(), gq.getLinearEntries(),
 			gq.getRooms(), gq.getLinearRooms() );
 		count++;
@@ -65,23 +65,23 @@ int gque_test()
 
 	printf( "*----- Full list -----*\n" );
 	count = 0;
-	int entries = gq.getEntries();
-	int linear = gq.getLinearEntries();
-	int rolled = entries - linear;
-	printf( "entries=%d linear=%d rolled=%d\n", entries, linear, rolled );
+	size_t entries = gq.getEntries();
+	size_t linear = gq.getLinearEntries();
+	size_t rolled = entries - linear;
+	printf( "entries=%zd linear=%zd rolled=%zd\n", entries, linear, rolled );
 	int *pp = (int *)gq.head();
 	while ( --linear >= 0 )
-		printf( "list[%d]=%d\n", count++, *pp++ );
+		printf( "list[%zd]=%d\n", count++, *pp++ );
 	pp = (int *)gq.begin();
 	while ( --rolled >= 0 )
-		printf( "list[%d]=%d\n", count++, *pp++ );
+		printf( "list[%zd]=%d\n", count++, *pp++ );
 	return 0;
 }
 
 
 typedef struct _vdata {
-	int		dataSize;
-	char	buf[512];
+	size_t		dataSize;
+	char		buf[512];
 } vdata;
 
 int gque_variable_size_test()
@@ -91,14 +91,14 @@ int gque_variable_size_test()
 	GQue gq;
 	gq.create( 1, 150 );
 
-	int i = 1;
+	size_t i = 1;
 	for (; i<50; ++i)
 	{
-		int size = i+4;
+		size_t size = i+4;
 		vdat.dataSize = size;
 		while ( !gq.requestLinearRooms(size) )
 		{
-			if ( gq.getCapacity() < (unsigned)size )
+			if ( gq.getCapacity() < size )
 			{
 				printf( "Error: Single item size exceeds total capacity.\n" );
 				return 0;
@@ -106,10 +106,10 @@ int gque_variable_size_test()
 
 			// Pop out an item from head to make rooms
 			vdata *vd = (vdata *)gq.head();
-			int dsize = vd->dataSize;
+			size_t dsize = vd->dataSize;
 			gq.shiftHead( vd->dataSize );
 
-			printf( "vd of size=%d was poped. head=%d, tail=%d, end=%d rem=%d\n",
+			printf( "vd of size=%zd was poped. head=%zd, tail=%zd, end=%ld rem=%zd\n",
 				dsize, gq.head()-gq.begin(), gq.tail()-gq.begin(),
 				gq.end()-gq.begin(), gq.remainder() );
 		}
@@ -118,7 +118,7 @@ int gque_variable_size_test()
 		// So, put it to queue.
 		memcpy( gq.tail(), (char *)&vdat, size );
 		gq.shiftTail( size );
-		printf( "vd of size=%d was added -- head=%d, tail=%d, end=%d rem=%d\n",
+		printf( "vd of size=%zd was added -- head=%zd, tail=%zd, end=%zd rem=%zd\n",
 				size, gq.head()-gq.begin(), gq.tail()-gq.begin(),
 				gq.end()-gq.begin(), gq.remainder() );
 	}

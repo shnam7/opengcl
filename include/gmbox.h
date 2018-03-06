@@ -46,8 +46,8 @@
 #endif
 
 
-typedef unsigned int		gmbox_t;
-typedef unsigned int		gmboxv_t;
+typedef unsigned long		gmbox_t;
+typedef unsigned long		gmboxv_t;
 
 #ifdef __cplusplus
 extern "C" {

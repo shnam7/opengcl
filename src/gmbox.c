@@ -40,7 +40,7 @@
 #include <string.h>
 
 
-static inline gque_t *_mb(int hmb) { return (gque_t *)hmb; }
+static inline gque_t *_mb(gmbox_t hmb) { return (gque_t *)hmb; }
 
 static inline gthread_mutex_t *_mtx(gmbox_t hmb)
 {
@@ -53,13 +53,13 @@ static inline gthread_cond_t *_cond(gmbox_t hmb)
 			+ sizeof(gthread_mutex_t) );
 }
 
-static inline void _lock(int hmb)
+static inline void _lock(gmbox_t hmb)
 {
 	gthread_mutex_t *mtx = _mtx(hmb);
 	if ( mtx ) gthread_mutex_lock( mtx );
 }
 
-static inline void _unlock(int hmb)
+static inline void _unlock(gmbox_t hmb)
 {
 	gthread_mutex_t *mtx = _mtx(hmb);
 	if ( mtx ) gthread_mutex_unlock( mtx );
@@ -75,7 +75,7 @@ static inline void _bcast(gmbox_t hmb)
 	gthread_cond_broadcast( _cond(hmb) );
 }
 
-static int _gmbox_create(unsigned msg_size, unsigned que_size, int use_lock)
+static gmbox_t _gmbox_create(unsigned msg_size, unsigned que_size, int use_lock)
 {
 	gque_t *mb = gque_create(msg_size, que_size);
 	if ( !mb ) return 0;
@@ -88,10 +88,10 @@ static int _gmbox_create(unsigned msg_size, unsigned que_size, int use_lock)
 			gque_delete( mb );
 			return 0;
 		}
-		gthread_mutex_init( _mtx((int)mb), 0 );
-		gthread_cond_init( _cond((int)mb), 0 );
+		gthread_mutex_init( _mtx((gmbox_t)mb), 0 );
+		gthread_cond_init( _cond((gmbox_t)mb), 0 );
 	}
-	return (int)mb;
+	return (gmbox_t)mb;
 }
 
 static int _gmbox_delete(gmbox_t hmb)
