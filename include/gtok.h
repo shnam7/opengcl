@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gtokenizer.h
  *
  *	OpenGCL Module : Generic String Tokenizer
@@ -31,8 +10,7 @@
  *		2001/08/02: Originally written.
  */
 
-#ifndef __GTOKENIZER_H
-#define __GTOKENIZER_H
+#pragma once
 
 #include <string.h>
 
@@ -72,19 +50,19 @@ gcl_api int gtok_set_separators(gtok_t *gt, const char *sep);
  * buf<out>: receives current token
  * sep_by<out>: receives separator following the current token(buf)
  * token_len<out>: receives current token length
- * 
+ *
  * Note: buf, sep_by, token_len can be null.
  *		In this case, just data is not written to them.
  */
-gcl_api int gtok_get_next(gtok_t *gt, char *buf, int bufsize, char *sep_by, int *token_len);
+gcl_api int gtok_get_next(gtok_t *gt, char *buf, unsigned bufsize, char *sep_by, unsigned *token_len);
 gcl_api void gtok_rewind(gtok_t *gt);
 
-static inline int gtok_has_more_tokens(const gtok_t *gt)
+inline int gtok_has_more_tokens(const gtok_t *gt)
 {
    return gt->pos<gt->tail;
 }
 
-static inline size_t gtok_get_next_token_length(const gtok_t *gt)
+inline size_t gtok_get_next_token_length(const gtok_t *gt)
 {
 	return gt->end - gt->pos;
 }
@@ -116,7 +94,7 @@ public:
 		{ return gtok_associate(&m_gt, str, slen, sep) != 0; }
 	bool setSeparators(const char *sep)
 		{ return gtok_set_separators(&m_gt, sep) != 0; }
-	bool getNext(char *buf, int bufsize, char *sep_by=0, int *token_len=0)
+	bool getNext(char *buf, unsigned bufsize, char *sep_by=0, unsigned *token_len=0)
 		{ return gtok_get_next(&m_gt, buf, bufsize, sep_by, token_len) != 0; }
 	void rewind() { gtok_rewind(&m_gt); }
 
@@ -131,7 +109,7 @@ public:
 
 #ifdef GTOK_SUPPORT_STL
 /*
- *	When STL enabled, all the STL functions are inlined to bypass 
+ *	When STL enabled, all the STL functions are inlined to bypass
  *	the WIN32 DLL linkage problem.
  *	The following class hierarchy is also for that.
  */
@@ -148,7 +126,7 @@ public:
 	GTokenizer(const char *str, int slen, const char *sep)
 		: _GTokenizer(str, slen, sep) {}
 
-	bool getNext(char *buf, int bufsize, char *sep_by=0, int *token_len=0)
+	bool getNext(char *buf, unsigned bufsize, char *sep_by=0, unsigned *token_len=0)
 		{ return _GTokenizer::getNext(buf, bufsize, sep_by, token_len); }
 	bool getNext(std::string& ss, char *sep_by=0)
 	{
@@ -161,8 +139,6 @@ public:
 #else
 
 typedef _GTokenizer		GTokenizer;
-
-#endif
 
 #endif
 

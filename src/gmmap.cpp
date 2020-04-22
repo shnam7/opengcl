@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gmmap.cpp
  *
  *	OpenGCL Module : Generic Memory Mapped IO
@@ -38,12 +17,14 @@
 
 #include "gmmap.h"
 #include <fcntl.h>
+#include <stdio.h>
+
 #if defined( _WIN32 )
 #include <io.h>
+
 #else
 #include <unistd.h>
 #endif
-
 
 #if defined( _WIN32 )
 #define open		_open
@@ -66,17 +47,17 @@ static size_t _filelength(int filedes)
 //--------------------------------------------------------------------
 //	class GMMap unix impl.
 //--------------------------------------------------------------------
-GMMap::GMMap()
+gcl_api GMMap::GMMap()
 : m_ptr(0), m_size(0) , m_hMap(0)
 {
 }
 
-GMMap::~GMMap()
+gcl_api GMMap::~GMMap()
 {
 	close();
 }
 
-void GMMap::close()
+gcl_api void GMMap::close()
 {
 	if ( !m_ptr ) return;
 #if !defined( _WIN32 )
@@ -92,7 +73,7 @@ void GMMap::close()
 	m_ptr = 0;
 }
 
-char *GMMap::_mmap(int filedes, off_t offset, size_t size,
+gcl_api char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 		bool readonly, const char *name)
 {
 	if ( isValid() ) close();
@@ -124,11 +105,11 @@ char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 		return 0;
 	}
 #else
-	HANDLE hFile = (HANDLE)_get_osfhandle( filedes );
+	HANDLE hFile = (filedes == -1) ? INVALID_HANDLE_VALUE : (HANDLE)_get_osfhandle( filedes );
 	if ( offset == 0 )
 	{
 		m_hMap = CreateFileMapping( hFile, NULL, readonly ? PAGE_READONLY
-				: PAGE_READWRITE, 0, size, name );
+				: PAGE_READWRITE, 0, (DWORD)size, name );   // size is DWORD in windows
 		if ( m_hMap==NULL ) return 0;
 		m_size = size==0 ? ::GetFileSize(hFile, 0) : size;
 		m_ptr = (char *)MapViewOfFile( m_hMap, readonly ? FILE_MAP_READ
@@ -142,7 +123,7 @@ char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 		if ( pos_base ) pos_base *= si.dwAllocationGranularity;
 		int pos_offs = offset % si.dwAllocationGranularity;
 		m_hMap = CreateFileMapping( hFile, NULL, readonly ? PAGE_READONLY
-				: PAGE_READWRITE, 0, size==0 ? 0 : offset+size, name );
+				: PAGE_READWRITE, 0, size==0 ? 0 : offset+(DWORD)size, name );
 		if ( m_hMap==NULL ) return 0;
 		m_size = size==0 ? ::GetFileSize(hFile, 0)-offset : size;
 		m_ptr = (char *)MapViewOfFile( m_hMap, readonly ? FILE_MAP_READ
@@ -153,7 +134,7 @@ char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 	{
 		CloseHandle( m_hMap );
 		m_size = 0;
-		return false;
+		return 0;
 	}
 #endif
 	return m_ptr;
@@ -163,32 +144,36 @@ char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 //--------------------------------------------------------------------
 //	class GMMapFile
 //--------------------------------------------------------------------
-GMMapFile::GMMapFile()
+gcl_api GMMapFile::GMMapFile()
 	: m_fd(-1)
 {
 }
 
-GMMapFile::~GMMapFile()
+gcl_api GMMapFile::~GMMapFile()
 {
 	close();
 }
 
-void GMMapFile::close()
+gcl_api void GMMapFile::close()
 {
 	GMMap::close();
 	if ( m_fd != -1 )
 	{
-		::close( m_fd );
+#if defined ( _MSC_VER )
+        ::_close(m_fd);
+#else
+        ::close( m_fd );
+#endif
 		m_fd = -1;
 	}
 }
 
-size_t GMMapFile::getFileLength() const
+gcl_api size_t GMMapFile::getFileLength() const
 {
 	return m_fd==-1 ? 0 : _filelength( m_fd );
 }
 
-char *GMMapFile::_mmap(const char *filePathName, off_t offset, size_t size,
+gcl_api char *GMMapFile::_mmap(const char *filePathName, off_t offset, size_t size,
 		bool bReadOnly, const char *name)
 {
 	if ( isValid() ) close();

@@ -2,7 +2,7 @@
 ***************************************************************************
 * This File is a part of OpenGCL.
 * Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
+*
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU Library General Public License
 * as published by the Free Software Foundation: either version 2
@@ -71,7 +71,7 @@ static int _gthread_rwlock_wrlock(gthread_rwlock_t *rwlock,
 				return GetLastError();
 			return ERROR_TIMEOUT;
 		}
-		
+
 		/* now, we must wait until all the reader to finish */
 		r = WaitForSingleObject(rwlock->h_rdlock, timeout);
 		if ( r == WAIT_TIMEOUT )
@@ -120,8 +120,7 @@ GCLAPI int gthread_rwlock_rdlock(gthread_rwlock_t *rwlock)
 	return _gthread_rwlock_rdlock(rwlock, INFINITE);
 }
 
-GCLAPI int gthread_rwlock_tryrdlock(gthread_rwlock_t *rwlock,
-									unsigned long timeout_msec)
+GCLAPI int gthread_rwlock_tryrdlock(gthread_rwlock_t *rwlock)
 {
 	return _gthread_rwlock_rdlock(rwlock, 0);
 }

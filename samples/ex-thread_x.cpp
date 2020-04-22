@@ -12,7 +12,7 @@
 #endif
 /* refer to notes in gthread.h and /usr/include/features.h */
 
-#include <gthread.h>
+#include "gthread.h"
 #include <stdio.h>
 #include <gtime.h>
 
@@ -55,7 +55,7 @@ int MyThread::run()
 class MsgPrinter : public GRunnable {
 protected:
 	virtual int run(GThread *pThread);
-};	
+};
 
 int MsgPrinter::run(GThread *pThread)
 {
@@ -79,7 +79,7 @@ public:
 	AutoMsgPrinter() { m_t.start(this); }
 	virtual ~AutoMsgPrinter() {}
 	virtual int run(GThread *pThread);
-};	
+};
 
 int AutoMsgPrinter::run(GThread *pThread)
 {
@@ -108,7 +108,7 @@ void *foo(void *)
 	for (int i=0; i<5; ++i)
 	{
 		gthread_testcancel();
-		printf( "foo: Thread %ld running.\n", pT->getThreadID() );
+		printf( "foo: Thread %ld running.\n", (long)pT->getThreadID() );
 		gtime_msleep( 100 );
 	}
 	gtime_msleep(1000);
@@ -140,7 +140,7 @@ int main()
 	printf( "Starting...\n" );
 
 	GThread gt, gt1, gt2;
-	printf( "main: creating thread #%ld...\n", gt.getThreadID() );
+	printf( "main: creating thread #%ld...\n", (long)gt.getThreadID() );
 	if ( gt.start(foo, 0) != 0 )
 	{
 		printf( "thread creation failed.\n" );
@@ -161,15 +161,15 @@ int main()
 
 	void *retval = 0;;
 	gt.join( &retval );
-	printf( "ret=%ld\n", (unsigned long)retval );
+	printf( "ret=%p\n", retval );
 
 	retval = 0;;
 	gt1.join( &retval );
-	printf( "ret=%ld\n", (unsigned long)retval );
+	printf( "ret=%p\n", retval );
 
 	retval = 0;
 	gt2.join( &retval );
-	printf( "ret=%ld\n", (unsigned long)retval );
+	printf( "ret=%p\n", retval );
 
 	gsem_getvalue( &sem, &val );
 	printf( "Finally, Sem value=%d\n", val );

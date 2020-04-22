@@ -17,11 +17,11 @@
 
 void *foo(void *data)
 {
-	int val = (unsigned long)data;
+	int val = (int)(uintptr_t)data;
 	printf( "Foo=%d\n", val );
 	//for ( ;; )
 		printf( "Hello %d\n", val );
-	
+
 	return 0;
 }
 

@@ -14,25 +14,20 @@
 int main()
 {
 	GMMapFile gmm;
-#if defined( _WIN32 )
-	const char *cp = gmm.mmap_ro( "../samples/exmmap.cpp" );
-#else
-	const char *cp = gmm.mmap_ro( "exmmap.cpp" );
-#endif
+	const char *cp = gmm.mmap_ro( "../samples/ex-mmap.cpp" );
 
-	int sz = gmm.getSize();
-	int i;
-	printf( "File mapping: r=%p Size=%d\n", cp, sz );
-	for (i=0; i<sz; ++i)
+	size_t size = gmm.getSize();
+	printf( "File mapping: r=%p Size=%zu\n", cp, size );
+	for (unsigned i=0; i<size; ++i)
 		printf( "%c", gmm[i] );
 
 	gmm.close();
 
 	char *p = gmm.mmap_vrw( 1024*1024 );
-	sz = gmm.getSize();
-	printf( "Virtual memory mapping: r=%p Size=%d\n", p, sz );
-	memset( p, 'A', sz );
-	for (i=0; i<sz; ++i)
+	size = gmm.getSize();
+	printf( "Virtual memory mapping: r=%p Size=%zu\n", p, size );
+	memset( p, 'A', size );
+	for (unsigned i=0; i<size; ++i)
 	{
 		if ( gmm[i] != 'A' )
 		{

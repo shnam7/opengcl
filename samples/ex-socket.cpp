@@ -36,8 +36,8 @@ static void *_serv_d(void *data)
 			break;
 		}
 
-		sprintf( buf, "%d Hello!\n", count++);
-		int slen = strlen( buf );
+        sprintf(buf, "%d Hello!\n", count++);
+        int slen = (int)strlen( buf );
 		if ( gs.write(buf, slen, 1000) != slen ) break;
 //		if ( gs.send(buf, slen) != slen ) break;
 //		if ( ::send( gs.getSocket(), buf, slen, MSG_DONTWAIT )!=slen) break;
@@ -62,7 +62,7 @@ void _server()
 	r = gsListener.listen( INADDR_ANY, EX_PORT );
 	if ( !r )
 	{
-		printf( "socket listen error: sock=%d.\n", gsListener.getSocket() );
+		printf( "socket listen error: sock=%d.\n", (int)gsListener.getSocket() );
 		return;
 	}
 	printf( "listen ready!\n" );
@@ -73,9 +73,9 @@ void _server()
 		if ( r < 0 ) break;		// error
 		if ( r== 0 ) continue;
 		sockaddr_in sa;
-		int sock = gsListener.accept( &sa );
-		printf( "r=%d sock=%d\n", r, sock );
-		if ( sock == -1 ) continue;
+		socket_t sock = gsListener.accept( &sa );
+		printf( "r=%d sock=%d\n", r, (int)sock );
+		if ( sock == INVALID_SOCKET ) continue;
 		printf( "client from %s accepted.\n", inet_ntoa(sa.sin_addr) );
 
 		GThread *pT = new GThread;
@@ -129,7 +129,7 @@ void _client()
 		printf( "Connection failed.\n" );
 		return;
 	}
-	printf( "Socket ID=%d\n", gs.getSocket() );
+	printf( "Socket ID=%d\n", (int)gs.getSocket() );
 
 
 	//--- read/write

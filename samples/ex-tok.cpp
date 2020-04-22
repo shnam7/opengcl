@@ -20,7 +20,7 @@ int test1()
 	{
 		char buf[256];
 		char sep;
-		int tokLen=0;
+		unsigned tokLen=0;
 		if ( !gtok.getNext(buf, sizeof(buf), &sep, &tokLen) )
 		{
 			printf( "Strange error...! must be bug.\n" );

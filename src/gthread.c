@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gthread.c
  *
  *	OpenGCL Module : gthread - POSIX pthread compatables and C++ wrappers
@@ -57,7 +36,7 @@ GCLAPI int gthread_join(gthread_t th, void **return_val)
 {
 	return pthread_join(th, return_val);
 }
-	
+
 GCLAPI int gthread_cancel(gthread_t th)
 {
 	return pthread_cancel(th);
@@ -258,7 +237,7 @@ GCLAPI int gthread_cond_timedwait(gthread_cond_t *cond,
 }
 
 /* rwlock */
-#ifdef __USE_UNIX98
+// #ifdef __USE_UNIX98
 GCLAPI int gthread_rwlock_init(gthread_rwlock_t *rwlock,
 							   gthread_rwlockattr_t *attr)
 {
@@ -294,7 +273,7 @@ GCLAPI int gthread_rwlock_unlock(gthread_rwlock_t *rwlock)
 {
 	return pthread_rwlock_unlock(rwlock);
 }
-#endif
+// #endif
 
 /* spin */
 
@@ -311,7 +290,7 @@ GCLAPI int gthread_rwlock_unlock(gthread_rwlock_t *rwlock)
 
 /* non-POSIX extensions */
 
-GCLAPI unsigned long gthread_get_oshandle(gthread_t th)
+GCLAPI uintptr_t gthread_get_oshandle(gthread_t th)
 {
-	return (unsigned long)th;
+	return (uintptr_t)th;
 }

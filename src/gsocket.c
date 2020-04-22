@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gsocket.c
  *
  *	OpenGCL Module : gsocket - BSD Socket extension and C++ wrappers
@@ -60,16 +39,16 @@
 #define ioctl			ioctlsocket
 #define close			closesocket
 #define MSG_DONTWAIT	0
-#define EINPROGRESS		WSAEWOULDBLOCK
+// #define EINPROGRESS		WSAEWOULDBLOCK
 #define __err			WSAGetLastError()
-#define EAGAIN			WSAEWOULDBLOCK
+// #define EAGAIN			WSAEWOULDBLOCK
 #else
 #define __err			errno
 #endif
 
-#if defined( __CYGWIN__ )
-#define MSG_DONTWAIT	0
-#endif
+// #if defined( __CYGWIN__ )
+// #define MSG_DONTWAIT	0
+// #endif
 
 
 socket_t gsock_create_socket(int type, unsigned long nbio)
@@ -205,7 +184,7 @@ int gsock_set_NBIO(socket_t sock, int nbio)
 {
 	unsigned long val = nbio;
 	return ioctl( sock, FIONBIO, &val ) == 0;
-	
+
 	/*
 	int flags = fcntl( sock, F_GETFL, 0 );
 	if ( flags < 0 ) return 0;
@@ -244,7 +223,7 @@ int gsock_get_readable_count(socket_t sock)
 	return val;
 }
 
-int gsock_check_readable(socket_t sock, unsigned long timeout)
+gcl_api int gsock_check_readable(socket_t sock, unsigned long timeout)
 {
 	int r;
 	fd_set fdsRead;
@@ -255,13 +234,13 @@ int gsock_check_readable(socket_t sock, unsigned long timeout)
 	FD_ZERO( &fdsExcept );
 	FD_SET( sock, &fdsRead );
 	FD_SET( sock, &fdsExcept );
-	r = select( sock+1, &fdsRead, NULL, &fdsExcept, &tv );
+	r = select( (int)sock+1, &fdsRead, NULL, &fdsExcept, &tv );
 	if ( r<0 || FD_ISSET(sock, &fdsExcept) || gsock_get_error(sock)!=0)
 		return -1;		// error
 	return FD_ISSET(sock, &fdsRead);
 }
 
-int gsock_check_writable(socket_t sock, unsigned long timeout)
+gcl_api int gsock_check_writable(socket_t sock, unsigned long timeout)
 {
 	int r;
 	fd_set fdsWrite;
@@ -272,7 +251,7 @@ int gsock_check_writable(socket_t sock, unsigned long timeout)
 	FD_ZERO( &fdsExcept );
 	FD_SET( sock, &fdsWrite );
 	FD_SET( sock, &fdsExcept );
-	r = select( sock+1, NULL, &fdsWrite, &fdsExcept, &tv );
+	r = select( (int)sock+1, NULL, &fdsWrite, &fdsExcept, &tv );
 	if ( r<0 || FD_ISSET(sock, &fdsExcept) ) return -1;		// error
 	return ( FD_ISSET(sock, &fdsWrite) && gsock_get_error(sock)==0 );
 }

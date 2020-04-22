@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gthread.h
  *
  *	OpenGCL Module : gthread - POSIX pthread compatables and C++ wrappers
@@ -38,8 +17,9 @@
  *		  Refer to /usr/include/features.h.
  */
 
-#ifndef __GTHREAD_H
-#define __GTHREAD_H
+#pragma once
+
+#include <stddef.h>
 
 #if defined( _WIN32 )	/* win32 port */
 
@@ -87,7 +67,7 @@ extern "C" {
 #define GTHREAD_CREATE_JOINABLE		0
 #define GTHREAD_CREATE_DETACHED		1
 
-typedef	unsigned long				gthread_t;
+typedef	uintptr_t                   gthread_t;
 
 typedef struct {
 	int			__detachstate;
@@ -116,7 +96,7 @@ typedef struct {
 } gthread_cond_t;
 
 typedef struct {
-	int		dummy;
+	int		        dummy;
 } gthread_condattr_t;
 
 typedef struct {
@@ -130,12 +110,12 @@ typedef struct {
 } gthread_rwlockattr_t;
 
 /* cleanup buffers */
-struct _gthread_cleanup_buffer {
+typedef struct __gthread_cleanup_buffer {
 	void	(*__routine)(void *);
 	void	*__arg;
 	int		__canceltype;
-	struct _gthread_cleanup_buffer	*__prev;
-};
+    struct __gthread_cleanup_buffer *__prev;
+} _gthread_cleanup_buffer;
 
 #else	/* unix port */
 
@@ -158,10 +138,9 @@ typedef pthread_mutexattr_t		gthread_mutexattr_t;
 
 typedef pthread_cond_t			gthread_cond_t;
 typedef pthread_condattr_t		gthread_condattr_t;
-#ifdef __USE_UNIX98
+
 typedef pthread_rwlock_t		gthread_rwlock_t;
 typedef pthread_rwlockattr_t	gthread_rwlockattr_t;
-#endif
 
 #endif	/* unix port */
 
@@ -180,7 +159,7 @@ GCLAPI int gthread_create(gthread_t *th, gthread_attr_t *attr,
 GCLAPI void gthread_exit(void *retval);
 
 GCLAPI int gthread_join(gthread_t gt, void **return_val);
-	
+
 GCLAPI int gthread_cancel(gthread_t th);
 
 GCLAPI void gthread_testcancel();
@@ -220,16 +199,16 @@ GCLAPI int gthread_attr_getstacksize(gthread_attr_t *attr,
 #if defined( _WIN32 )
 
 #define gthread_cleanup_push(routine,arg) \
-	{ struct _gthread_cleanup_buffer __buffer_; \
+	{ _gthread_cleanup_buffer __buffer_; \
 		_gthread_cleanup_push(&__buffer_, (routine), (arg));
 
-GCLAPI void _gthread_cleanup_push(struct _gthread_cleanup_buffer *buf,
+GCLAPI void _gthread_cleanup_push(_gthread_cleanup_buffer *buf,
 						   void (*routine)(void *), void *arg);
 
 #define gthread_cleanup_pop(execute) \
     _gthread_cleanup_pop(&__buffer_, (execute)); }
 
-GCLAPI void _gthread_cleanup_pop(struct _gthread_cleanup_buffer *buf, int execute);
+GCLAPI void _gthread_cleanup_pop(_gthread_cleanup_buffer *buf, int execute);
 
 #else
 
@@ -296,9 +275,8 @@ GCLAPI int gthread_cond_timedwait(gthread_cond_t *cond,
 							 unsigned long timeout_msec);
 
 /* rwlock */
-#if defined(_WIN32) || defined(__USE_UNIX98)
-GCLAPI int gthread_rwlock_init(gthread_rwlock_t *rwlock,
-							   gthread_rwlockattr_t *attr);
+// #if defined(_WIN32) || defined(__USE_UNIX98)
+GCLAPI int gthread_rwlock_init(gthread_rwlock_t *rwlock, gthread_rwlockattr_t *attr);
 
 GCLAPI int gthread_rwlock_destroy(gthread_rwlock_t *rwlock);
 
@@ -311,7 +289,7 @@ GCLAPI int gthread_rwlock_wrlock(gthread_rwlock_t *rwlock);
 GCLAPI int gthread_rwlock_trywrlock(gthread_rwlock_t *rwlock);
 
 GCLAPI int gthread_rwlock_unlock(gthread_rwlock_t *rwlock);
-#endif
+// #endif
 
 
 /* spin */
@@ -334,7 +312,7 @@ GCLAPI int gthread_setobject(void *obj);
 GCLAPI void *gthread_getobject();
 */
 
-unsigned long gthread_get_oshandle(gthread_t th);
+GCLAPI uintptr_t gthread_get_oshandle(gthread_t th);
 
 
 #ifdef __cplusplus
@@ -389,7 +367,7 @@ public:
 
 	// Returns OS dependent handle.
 	// On win32 platforms, it returns win32 handle to thread.
-	unsigned long getOSHandle() const { return gthread_get_oshandle(m_t); }
+	uintptr_t getOSHandle() const { return gthread_get_oshandle(m_t); }
 
 protected:
 	int __start(struct __start_param *pa);
@@ -457,7 +435,6 @@ public:
 //--------------------------------------------------------------------
 //	class GRWLock - wrapper for gthread_rwlock_t
 //--------------------------------------------------------------------
-#if defined(_WIN32) || defined(__USE_UNIX98)
 class GRWLock {
 protected:
 	gthread_rwlock_t		m_rwlock;
@@ -468,7 +445,7 @@ public:
 	~GRWLock() { gthread_rwlock_destroy(&m_rwlock); }
 
 	int rdlock() { return gthread_rwlock_rdlock(&m_rwlock); }
-	
+
 	int tryrdlock() { return gthread_rwlock_tryrdlock(&m_rwlock); }
 
 	int wrlock() { return gthread_rwlock_wrlock(&m_rwlock); }
@@ -477,8 +454,5 @@ public:
 
 	int unlock() { return gthread_rwlock_unlock(&m_rwlock); }
 };
-#endif
 
 #endif	/* __cplusplus */
-
-#endif

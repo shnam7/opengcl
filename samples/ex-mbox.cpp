@@ -20,7 +20,7 @@ typedef struct _gmsg_t {
 static int s_id = 0;
 void *foo_put(void *data)
 {
-	
+
 	int id = s_id++;
 
 	size_t hmb = *(size_t *)data;
@@ -33,7 +33,7 @@ void *foo_put(void *data)
 #if USE_MBOXV
 		char buf[256];
 		sprintf( buf, "foo[%d]: %s:%d", id, hello, count++ );
-		if ( !gmboxv_put(hmb, buf, strlen(buf), 1000) )
+		if ( !gmboxv_put(hmb, buf, (unsigned)strlen(buf), 1000) )
 #else
 		gmsg_t msg;
 		sprintf( msg.msg, "foo[%d]: %s:%d", id, hello, count++ );
@@ -81,7 +81,7 @@ void *foo_get(void *data)
 int main()
 {
 #if USE_MBOXV
-	int hmb = gmboxv_create( 1000, 1 );
+	gmboxv_t hmb = gmboxv_create( 1000, 1 );
 #else
 	int hmb = gmbox_create( sizeof(gmsg_t), 64, 1 );
 #endif

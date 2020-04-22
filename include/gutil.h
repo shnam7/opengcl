@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gutils.h
  *
  *	OpenGCL Module : gutils - general utilities
@@ -32,8 +11,7 @@
  *
  */
 
-#ifndef __GUTILS_H
-#define __GUTILS_H
+#pragma once
 
 #if defined( _WIN32 ) && defined(_DLL)
 #ifdef GCL_EXPORTS
@@ -71,6 +49,4 @@ gcl_api char *gcl_chain_pathname(char *basepath, const char *extrapath);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

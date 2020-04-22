@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gutils.c
  *
  *	OpenGCL Module : gutils - general utilities
@@ -32,14 +11,25 @@
  *
  */
 
-#include "gutils.h"
+#include "gutil.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
-#if defined ( _WIN32 )
-#define snprintf		_snprintf
+#if defined ( _MSC_VER )
+#pragma warning(disable:4996)   // enable _CRT_SECURE_NO_WARNINGS
 #endif
+
+// generate time string
+static char *__strtime(char *buf, int bufsize, struct tm *ptm)
+{
+	int n = snprintf( buf, bufsize, "%04d-%02d-%02d %02d:%02d:%02d",
+			1900+ptm->tm_year, 1+ptm->tm_mon, ptm->tm_mday,
+			ptm->tm_hour, ptm->tm_min, ptm->tm_sec );
+	if ( n == -1 ) buf[bufsize-1] = '\0';
+	return buf;
+}
+
 
 void gcl_chr2hex(char c, char hex[2])
 {
@@ -81,30 +71,20 @@ void gcl_hexstr2byte(const char *src, char *dst, int n)
 	}
 }
 
-// generate time string
-static char *_strtime(char *buf, int bufsize, struct tm *ptm)
-{
-	int n = snprintf( buf, bufsize, "%04d-%02d-%02d %02d:%02d:%02d",
-			1900+ptm->tm_year, 1+ptm->tm_mon, ptm->tm_mday,
-			ptm->tm_hour, ptm->tm_min, ptm->tm_sec );
-	if ( n == -1 ) buf[bufsize-1] = '\0';
-	return buf;
-}
-
 char *gcl_strtime(char *buf, int bufsize, time_t _tm)
 {
-	return _strtime( buf, bufsize, localtime(&_tm) );
+	return __strtime( buf, bufsize, localtime(&_tm) );
 }
 
 char *gcl_strgmtime(char *buf, int bufsize, time_t _tm)
 {
-	return _strtime( buf, bufsize, gmtime(&_tm) );
+	return __strtime( buf, bufsize, gmtime(&_tm) );
 }
 
 
 char *gcl_chain_pathname(char *basepath, const char *extrapath)
 {
-	int slen = strlen(basepath);
+	size_t slen = strlen(basepath);
 	if ( slen>0 && basepath[slen-1]!='/' ) basepath[slen++] = '/';
 	if ( extrapath[0] == '/' ) ++extrapath;
 	strcpy( basepath+slen, extrapath );

@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gthread.c
  *
  *	OpenGCL Module : gthread - POSIX pthread compatables and C++ wrappers
@@ -42,6 +21,7 @@
 #include <windows.h>
 #include <errno.h>
 #include <process.h>
+#include <stdlib.h>
 
 /*
 	TLS_MINIMUM_AVAIABLE per process is:
@@ -57,14 +37,14 @@ struct _key_entry {
 };
 
 
-struct _thread_param {
-	gthread_func_t	func;
-	void			*data;
-	HANDLE			h_thread;	/* OS handle */
-	gsem_t			*sem;		/* parent --> thread */
-	gsem_t			*sem_th;	/* thread --> parent */
-	___gthread_tcb	*_tcb;		/* thread control block */
-};
+typedef struct {
+	gthread_func_t	    func;
+	void			    *data;
+	HANDLE			    h_thread;	/* OS handle */
+	gsem_t			    *sem;		/* parent --> thread */
+	gsem_t			    *sem_th;	/* thread --> parent */
+	__gthread_tcb	    *_tcb;		/* thread control block */
+} _thread_param;
 
 
 static gthread_key_t	_gkey_cleanup = GTHREAD_INVALID_KEY;
@@ -73,9 +53,9 @@ extern gthread_key_t	_gkey_self;		/* this is referenced by gtime.c */
 static gthread_key_t	_gkey_tcb     = GTHREAD_INVALID_KEY;
 
 static struct _key_entry _gthread_keys[GTHREAD_KEYS_MAX] = { {0, 0}, };
-static ___gthread_tcb		 _tcb_main;
+static __gthread_tcb		 _tcb_main;
 
-static void _main_thread_exit()
+static void _main_thread_exit(void)
 {
 	gthread_exit(0);
 }
@@ -116,7 +96,7 @@ static int _init_syskeys()
 	return r;
 }
 
-static int _init_tcb(___gthread_tcb *tcb, HANDLE h_thread)
+static int _init_tcb(__gthread_tcb *tcb, HANDLE h_thread)
 {
 	INIT_LIST_HEAD( &tcb->join_list );
 	INIT_LIST_HEAD( &tcb->join_node );
@@ -128,7 +108,7 @@ static int _init_tcb(___gthread_tcb *tcb, HANDLE h_thread)
 	return 0;
 }
 
-static int _destroy_tcb(___gthread_tcb *tcb)
+static int _destroy_tcb(__gthread_tcb *tcb)
 {
 	if ( tcb->h_thread ) CloseHandle( tcb->h_thread );
 	if ( tcb->h_cancel ) CloseHandle( tcb->h_cancel );
@@ -183,12 +163,12 @@ static void *_dummy_wrapper(void *data)
 		_tcb resides in thread stack and is vaild as long as
 		the thread is alive
 	*/
-	___gthread_tcb _tcb;
+	__gthread_tcb _tcb;
 	int r = _init_tcb( &_tcb, pa->h_thread );
 	if ( r != 0 )		/* tcb init failed */
 	{
-		pa->data = (void *)r;
-		pa->_tcb = (___gthread_tcb *)1;		/* dummy */
+		pa->data = (void *)(uintptr_t)r;
+		pa->_tcb = (__gthread_tcb *)1;		/* dummy */
 		return 0;
 	}
 	_tcb.h_thread = pa->h_thread;
@@ -269,12 +249,12 @@ GCLAPI int gthread_create(gthread_t *th, gthread_attr_t *attr,
 	/* while ( pa._tcb == 0 ) gthread_yield(); */
 
 	/* sanity check for w32 control block */
-	if ( pa._tcb == (___gthread_tcb *)1 )	/* error: set to 1 by new thread */
+	if ( pa._tcb == (__gthread_tcb *)1 )	/* error: set to 1 by new thread */
 	{
 		CloseHandle( pa.h_thread );
 		gsem_destroy( &sem );
 		gsem_destroy( &sem_th );
-		return (int)pa.data;
+		return (int)(uintptr_t)pa.data;
 	}
 
 	*th = (gthread_t)pa._tcb;
@@ -302,9 +282,8 @@ GCLAPI void gthread_exit(void *retval)
 			list_head *pos, *tmp;
 			list_for_each_safe(pos, tmp, &_tcb->join_list)
 			{
-				__gthread_tcb *_ent = list_entry(pos,
-						__gthread_tcb, join_node);
-				_ent->join_retval = (DWORD)retval;
+				__gthread_tcb *_ent = list_entry(pos, __gthread_tcb, join_node);
+				_ent->join_retval = (uintptr_t)retval;
 				list_del_init( &_ent->join_node );
 			}
 		}
@@ -320,7 +299,7 @@ GCLAPI void gthread_exit(void *retval)
 	else
 	{
 		/* main thread does not explicitly call _endthread */
-		_endthreadex( (int)retval );
+		_endthreadex( (unsigned)(uintptr_t)retval );
 	}
 }
 
@@ -410,7 +389,7 @@ GCLAPI gthread_t gthread_self()
 	return (gthread_t)gthread_getspecific(_gkey_self);
 }
 
-GCLAPI void _gthread_cleanup_push(struct _gthread_cleanup_buffer *buf,
+GCLAPI void _gthread_cleanup_push(_gthread_cleanup_buffer *buf,
 						   void (*routine)(void *), void *arg)
 {
 	buf->__routine = routine;
@@ -420,7 +399,7 @@ GCLAPI void _gthread_cleanup_push(struct _gthread_cleanup_buffer *buf,
 	gthread_setspecific( _gkey_cleanup, buf);
 }
 
-GCLAPI void _gthread_cleanup_pop(struct _gthread_cleanup_buffer *buf, int execute)
+GCLAPI void _gthread_cleanup_pop(_gthread_cleanup_buffer *buf, int execute)
 {
 	if ( execute ) (*buf->__routine)(buf->__arg);
 	gthread_setspecific(_gkey_cleanup, buf->__prev );
@@ -493,10 +472,10 @@ void *gthread_getobject()
 }
 */
 
-unsigned long gthread_get_oshandle(gthread_t gt)
+GCLAPI uintptr_t gthread_get_oshandle(gthread_t gt)
 {
 	__gthread_tcb *_tcb = (__gthread_tcb *)gt;
 	if ( IsBadWritePtr(_tcb, sizeof(*_tcb)) ) return 0;
 
-	return (unsigned long)_tcb->h_thread;
+	return (uintptr_t)_tcb->h_thread;
 }

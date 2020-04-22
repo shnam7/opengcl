@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gthread_x.cpp
  *
  *	OpenGCL Module : gthread - WIN32 C++ wrapper for POSIX pthread
@@ -47,7 +26,7 @@
 
 struct __start_param {
 	GThread			*pThread;
-	GRunnable		*pRunnable;	
+	GRunnable		*pRunnable;
 	gthread_func_t	pFunc;
 	void			*data;
 	gsem_t			*sem;			/* parent --> thread */

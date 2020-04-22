@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gmbox.cpp
  *
  *	OpenGCL Module : gmbox - General purpose message box
@@ -176,9 +155,9 @@ int gmboxv_delete(gmboxv_t hmb)
 	return _gmbox_delete( hmb );
 }
 
-int gmboxv_put(gmboxv_t hmb, const void *msg, int msg_size, unsigned long timeout)
+int gmboxv_put(gmboxv_t hmb, const void *msg, unsigned msg_size, unsigned long timeout)
 {
-	int size;
+	unsigned size;
 
 	if ( hmb==0 || msg_size<=0 ) return 0;
 	_lock( hmb );
@@ -221,7 +200,7 @@ static int _gmboxv_get(gmboxv_t hmb, void *buf, int bufsize, int *msg_size, int 
 		_unlock(hmb);
 		return 0;
 	}
-	
+
 	memcpy( buf, pos+sizeof(int), size );
 	gque_shift_head( _mb(hmb), size+sizeof(int) );
 	_unlock(hmb);

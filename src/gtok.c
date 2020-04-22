@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gtok.c
  *
  *	OpenGCL Module : Generic String Tokenizer
@@ -34,6 +13,11 @@
 #include "gtok.h"
 #include <string.h>
 
+#if defined ( _MSC_VER )
+#pragma warning(disable:4996)   // enable _CRT_SECURE_NO_WARNINGS
+#endif
+
+
 static inline void _set_epos(gtok_t *gt, const char *ppos)
 {
 	for (; ppos<gt->tail; ++ppos)
@@ -41,7 +25,7 @@ static inline void _set_epos(gtok_t *gt, const char *ppos)
 	gt->end = ppos;
 }
 
-int gtok_associate(gtok_t *gt, const char *str, size_t slen, const char *sep)
+gcl_api int gtok_associate(gtok_t *gt, const char *str, size_t slen, const char *sep)
 {
 	if ( str==0 && sep==0 )
 	{
@@ -56,23 +40,24 @@ int gtok_associate(gtok_t *gt, const char *str, size_t slen, const char *sep)
 	return 1;
 }
 
-int gtok_set_separators(gtok_t *gt, const char *sep)
+gcl_api int gtok_set_separators(gtok_t *gt, const char *sep)
 {
 	if ( strlen(sep)>=sizeof(gt->sep) )
 	{
 	   gt->sep[0] = 0;
 	   return 0;
 	}
-	strcpy( gt->sep, sep );
+	strncpy( gt->sep, sep, MAX_SEPARATORS );
+    gt->sep[MAX_SEPARATORS] = 0;
 	return 1;
 }
 
-int gtok_get_next(gtok_t *gt, char *buf, int bufsize, char *sep_by, int *token_len)
+gcl_api int gtok_get_next(gtok_t *gt, char *buf, unsigned bufsize, char *sep_by, unsigned *token_len)
 {
-	int tok_len;
+	unsigned tok_len;
 
 	if ( gt->pos>=gt->tail ) return 0;
-	tok_len = gt->end - gt->pos;
+	tok_len = (unsigned)(gt->end - gt->pos);
 	if ( buf )
 	{
 		if ( bufsize <= tok_len ) return 0;
@@ -86,7 +71,7 @@ int gtok_get_next(gtok_t *gt, char *buf, int bufsize, char *sep_by, int *token_l
 	return 1;
 }
 
-void gtok_rewind(gtok_t *gt)
+gcl_api void gtok_rewind(gtok_t *gt)
 {
 	gt->pos = gt->head;
 	_set_epos( gt, gt->pos );

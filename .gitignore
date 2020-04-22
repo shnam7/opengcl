@@ -1,3 +1,4 @@
-# IntelliJ project files
-.idea
-*.iml
+.vscode
+.trash
+/build
+/__*

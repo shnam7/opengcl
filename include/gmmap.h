@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gmmap.h
  *
  *	OpenGCL Module : Generic Memory Mapped IO
@@ -36,8 +15,7 @@
  *		  unless specified otherwise.
  */
 
-#ifndef _GMMAP_H
-#define _GMMAP_H
+#pragma once
 
 #include <sys/types.h>
 #if defined( _WIN32 )
@@ -67,18 +45,17 @@ typedef _off_t		off_t;
 class gcl_api GMMap {
 protected:
 	char				*m_ptr;
-	unsigned long		m_size;
-	void				*m_hMap;
+	size_t		        m_size;
+	void                *m_hMap;
 
 public:
 	GMMap();
 	~GMMap();
 
 	//--- manipulators
-	
+
 	// read only mappings
-	const char *mmap_ro(int filedes, off_t offset, size_t size,
-			const char *name=0)
+	const char *mmap_ro(int filedes, off_t offset, size_t size, const char *name=0)
 		{ return _mmap(filedes, offset, size, true, name); }
 
 		// size becomes to whole file length
@@ -92,7 +69,7 @@ public:
 		// maps to system virtual memory
 	const char *mmap_vro(int size, const char *name=0)
 		{ return _mmap(-1, 0, size, true, name); }
-		
+
 	// read/write mappings
 	char *mmap_rw(int filedes, off_t offset, size_t size, const char *name=0)
 		{ return _mmap(filedes, offset, size, false, name); }
@@ -108,7 +85,7 @@ public:
 		// maps to system virtual memory
 	char *mmap_vrw(int size, const char *name=0)
 		{ return _mmap(-1, 0, size, false, name); }
-	
+
 	void close();
 
 
@@ -120,7 +97,7 @@ public:
 
 	//--- accessors
 	bool isValid() const { return m_ptr!=0; }
-	unsigned long getSize() const { return m_size; }
+	size_t getSize() const { return m_size; }
 	const char *begin() const { return m_ptr; }
 	const char *end() const { return m_ptr+m_size; }
 	char *begin() { return m_ptr; }
@@ -177,5 +154,3 @@ protected:
 	char *_mmap(const char *filePathName, off_t offset,
 			size_t size, bool readonly, const char *name);
 };
-
-#endif

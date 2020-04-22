@@ -1,25 +1,4 @@
 /*
-***************************************************************************
-* This File is a part of OpenGCL.
-* Copyright (c) 2004 Soo-Hyuk Nam (shnam7@gmail.com)
-* 
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU Library General Public License
-* as published by the Free Software Foundation: either version 2
-* of the License, or (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU Library General Public License for more details.
-*
-* Should this software be used in another application, an acknowledgement
-* that OpenGCL code is used would be appreciated, but it is not mandatory.
-*
-***************************************************************************
-*/
-
-/*
  *	* gsocket.h
  *
  *	OpenGCL Module : gsocket - BSD Socket extension and C++ wrappers
@@ -44,8 +23,7 @@
  *		  other receving functions.
  */
 
-#ifndef __GSOCKET_H
-#define __GSOCKET_H
+#pragma once
 
 #if defined( _WIN32 )
 #include <winsock2.h>
@@ -75,9 +53,12 @@ typedef SOCKET	socket_t;
 #define SHUT_RD		SD_RECEIVE
 #define SHUT_WR		SD_SEND
 #define SHUT_RDWR	SD_BOTH
+
 #else
-typedef int			socket_t;
+typedef uintptr_t   socket_t;
+#define INVALID_SOCKET  ((uintptr_t)-1)
 #endif
+
 typedef u_long		ipaddr_t;
 
 
@@ -143,25 +124,25 @@ gcl_api int gsock_connect_by_name(socket_t sock, const char *addr, int port);
 
 gcl_api int gsock_listen(socket_t sock, ipaddr_t ipAddr, int port, int backlog);
 
-static inline socket_t gsock_accept(socket_t sock, struct sockaddr *addr,
+inline socket_t gsock_accept(socket_t sock, struct sockaddr *addr,
 		socklen_t *addrLen)
 	{ return accept(sock, addr, addrLen); }
-	
-static inline socket_t gsock_accept2(socket_t sock, struct sockaddr_in *addr)
+
+inline socket_t gsock_accept2(socket_t sock, struct sockaddr_in *addr)
 	{ socklen_t salen=sizeof(struct sockaddr_in);
 	   	return accept(sock, (struct sockaddr *)addr, &salen); }
 
-static inline socket_t gsock_accept1(socket_t sock)
+inline socket_t gsock_accept1(socket_t sock)
 	{ struct sockaddr_in sa; socklen_t salen=sizeof(sa);
 	   	return accept(sock, (struct sockaddr *)&sa, &salen); }
 
-static inline int gsock_peek(socket_t sock, char *buf, int len)
+inline int gsock_peek(socket_t sock, char *buf, int len)
 	{ return recv(sock, buf, len, MSG_PEEK); }
 
-static inline int gsock_recv(socket_t sock, char *buf, int len)
+inline int gsock_recv(socket_t sock, char *buf, int len)
 	{ return recv(sock, buf, len, 0); }
 
-static inline int gsock_send(socket_t sock, const char *buf, int len)
+inline int gsock_send(socket_t sock, const char *buf, int len)
 	{ return send(sock, buf, len, 0); }
 
 gcl_api int gsock_read(socket_t sock, char *buf, int n,
@@ -170,19 +151,19 @@ gcl_api int gsock_read(socket_t sock, char *buf, int n,
 gcl_api int gsock_write(socket_t sock, const char *buf,
 		int n, unsigned long timeout);
 
-static inline int gsock_readn(socket_t sock, void *buf, int n,
+inline int gsock_readn(socket_t sock, void *buf, int n,
 		unsigned long timeout)
 	{ return gsock_read(sock, (char *)buf, n, timeout)==n; }
 
-static inline int gsock_writen(socket_t sock, const void *buf, int n,
+inline int gsock_writen(socket_t sock, const void *buf, int n,
 		unsigned long timeout)
 	{ return gsock_write(sock, (const char *)buf, n, timeout)==n; }
 
 #if defined( _WIN32 )
-static inline int gsock_getlasterror() { return WSAGetLastError(); }
+inline int gsock_getlasterror() { return WSAGetLastError(); }
 #else
 #include <errno.h>
-static inline int gsock_getlasterror() { return errno; }
+inline int gsock_getlasterror() { return errno; }
 #endif
 
 
@@ -191,27 +172,27 @@ static inline int gsock_getlasterror() { return errno; }
  */
 gcl_api int gsock_set_NBIO(socket_t sock, int nbio);
 
-static inline int gsock_set_receive_buffer_size(socket_t sock, int size)
+inline int gsock_set_receive_buffer_size(socket_t sock, int size)
 	{ return setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
 		(char *)&size, sizeof(int))==0; }
 
-static inline int gsock_set_send_buffer_size(socket_t sock, int size)
+inline int gsock_set_send_buffer_size(socket_t sock, int size)
 	{ return setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&size,
 		sizeof(int))==0; }
 
-static inline int gsock_get_socket_name(socket_t sock, struct sockaddr *name,
+inline int gsock_get_socket_name(socket_t sock, struct sockaddr *name,
 		socklen_t *namelen)
 	{ return getsockname(sock, name, namelen)==0; }
 
-static inline int gsock_get_socket_name2(socket_t sock, struct sockaddr_in *name)
+inline int gsock_get_socket_name2(socket_t sock, struct sockaddr_in *name)
 	{ socklen_t namelen=sizeof(struct sockaddr_in);
 	  	return gsock_get_socket_name(sock, (struct sockaddr *)name, &namelen); }
 
-static inline int gsock_get_peer_name(socket_t sock, struct sockaddr *name,
+inline int gsock_get_peer_name(socket_t sock, struct sockaddr *name,
 		socklen_t *namelen)
 	{ return getpeername(sock, name, namelen)==0; }
 
-static inline int gsock_get_peer_name2(socket_t sock, struct sockaddr_in *name)
+inline int gsock_get_peer_name2(socket_t sock, struct sockaddr_in *name)
 	{ socklen_t namelen=sizeof(struct sockaddr_in);
 	  	return gsock_get_peer_name(sock, (struct sockaddr *)name, &namelen); }
 
@@ -221,10 +202,10 @@ gcl_api int gsock_get_send_buffer_size(socket_t sock);
 
 gcl_api int gsock_get_readable_count(socket_t sock);
 
-static inline int gsock_get_readable_data_count(socket_t sock)
+inline int gsock_get_readable_data_count(socket_t sock)
 	{ return gsock_get_readable_count(sock); }
 
-static inline int gsock_get_error(socket_t sock)
+inline int gsock_get_error(socket_t sock)
 	{ int err; socklen_t size=sizeof(err);
 		getsockopt( sock, SOL_SOCKET, SO_ERROR, (char *)&err, &size );
 		return err; }
@@ -235,30 +216,30 @@ gcl_api int gsock_check_readable(socket_t sock, unsigned long timeout);
 	/* returns -1 on error, positive when readable, 0 otherwise. */
 gcl_api int gsock_check_writable(socket_t sock, unsigned long timeout);
 
-static inline int gsock_is_readable(socket_t sock, unsigned long timeout)
+inline int gsock_is_readable(socket_t sock, unsigned long timeout)
 	{ return gsock_check_readable(sock, timeout)>0; }
 
-static inline int gsock_is_writable(socket_t sock, unsigned long timeout)
+inline int gsock_is_writable(socket_t sock, unsigned long timeout)
 	{ return gsock_check_writable(sock, timeout)>0; }
 
-static inline int gsock_setopt_reuse_addr(socket_t sock, int reuse)
+inline int gsock_setopt_reuse_addr(socket_t sock, int reuse)
 	{ return setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
 			(char *)&reuse, sizeof(int)) == 0; }
 
 /* V protocol support */
-static inline int gsock_readvp(socket_t sock, vpacket_t *vp,
+inline int gsock_readvp(socket_t sock, vpacket_t *vp,
 		unsigned long timeout)
 	{ return gsock_readn(sock, vp, sizeof(vpacket_t), timeout); }
 
-static inline int gsock_writevp(socket_t sock, const vpacket_t *vp,
+inline int gsock_writevp(socket_t sock, const vpacket_t *vp,
 		unsigned long timeout)
 	{ return gsock_writen(sock, vp, sizeof(vpacket_t), timeout); }
 
-static inline int gsock_writevpn(socket_t sock, const vpacket_t *vp,
+inline int gsock_writevpn(socket_t sock, const vpacket_t *vp,
 		int len, unsigned long timeout)
 	{ return gsock_writen(sock, vp, len, timeout); }
 
-static inline int gsock_simple_reply(socket_t sock, unsigned int code,
+inline int gsock_simple_reply(socket_t sock, unsigned int code,
 		unsigned long timeout)
 {
 	vpacket_t vp = { VPT_REPLY, (unsigned char)code, 0 };
@@ -303,7 +284,7 @@ public:
 		{ return gsock_shutdown(m_sock, how) != 0; }
 	bool attach(socket_t sock);
 	bool detach();
-	
+
 	bool connect(ipaddr_t ipAddr, int port) const
 		{ return gsock_connect(m_sock, ipAddr, port) != 0; }
 	bool connect(const char *addr, int port) const
@@ -367,7 +348,7 @@ public:
 		{ return gsock_get_send_buffer_size(m_sock); }
 	int getReadableCount() const
 		{ return gsock_get_readable_count(m_sock); }
- 
+
 	int getError() const { return gsock_get_error(m_sock); }
 	int checkReadable(unsigned long timeout=0) const
 		{ return gsock_check_readable(m_sock, timeout); }
@@ -381,13 +362,11 @@ public:
 	bool setOptReuseAddr(bool reuse)
 		{ return gsock_setopt_reuse_addr(m_sock, (int)reuse) != 0; }
 
-	bool isValid() const { return m_sock != -1; }
+	bool isValid() const { return m_sock != (socket_t)-1; }
 
 	socket_t getSocket() const { return m_sock; }
 
 	//--- operators
 	operator socket_t() const { return m_sock; }
 };
-#endif
-
 #endif
