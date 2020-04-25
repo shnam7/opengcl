@@ -88,7 +88,7 @@ int gsock_listen(socket_t sock, ipaddr_t ipAddr, int port, int backlog)
 {
 	struct sockaddr_in sa_serv;
 
-	if ( sock == -1 ) return 0;
+	if ( sock == INVALID_SOCKET ) return 0;
 	memset ( &sa_serv, '\0', sizeof(sa_serv) );
 	sa_serv.sin_family      = AF_INET;
 	sa_serv.sin_addr.s_addr = ipAddr;				// server address

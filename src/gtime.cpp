@@ -21,6 +21,6 @@ gcl_api gcl::nanotick_t gcl::chrono::nanoTicks() {
 #else
     timespec tm;
     clock_gettime(CLOCK_MONOTONIC, &tm);
-    return tm.tv_nsec;
+    return tm.tv_sec * 1000000000 + tm.tv_nsec;
 #endif
 }

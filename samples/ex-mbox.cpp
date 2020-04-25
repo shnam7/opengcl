@@ -23,9 +23,7 @@ void *foo_put(void *data)
 		if ( mb->put(msg) ) {
             printf( "putter:%s qsize=%d\n", msg.msg, mb->length() );
         }
-        // printf( "putter failed: tid=%d count=%d.\n", tid, count );
 		gcl::sleep(0);
-		pthread_testcancel();
 	}
 	return 0;
 }
@@ -42,11 +40,7 @@ void *foo_get(void *data)
 		if ( mb->get(&msg) ) {
             printf( "getter:%s qsize=%d\n", msg.msg, mb->length() );
         }
-		// printf( "getter failed: tid=%d count=%d.\n", tid, count );
 		gcl::sleep(0);
-		pthread_testcancel();
-
-        // if (count > 100) return 0;
 	}
 	return 0;
 }
@@ -64,7 +58,7 @@ int main()
 		getters[i].start( foo_get, &mbox );
 	}
 
-    gcl::sleep(2000);
+    gcl::sleep(1000);
     printf("------------------------------TIMEOUT------------------\n");
 	for (int i=0; i<MAX_THREAD; ++i)
 	{

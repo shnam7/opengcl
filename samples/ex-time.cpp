@@ -20,18 +20,17 @@ int main()
 	int n=0;
 	while ( n++<100 )
 	{
-		printf( "ticks=%ld nanoticks=%lld\n", ticks(), nanoTicks() );
+		printf( "ticks=%u nanoticks=%lu\n", ticks(), nanoTicks() );
 //		gtime_msleep( 0 );
 	}
 
-    timespec tm = { 0, 5000 };
 	nanotick_t tm1 = nanoTicks();
 	// gtime_msleep( 1 );
     // ::nanosleep(&tm, &tm);
     // usleep(50);
 	nanotick_t el = nanoElapsed(tm1);
 
-	printf( "tm1=%lld elapsed=%lld\n", tm1, el );
+	printf( "tm1=%lu elapsed=%lu\n", tm1, el );
 	// printf( "elapsed = %ld\n", elapsed );
 
 	// tm1 = 0xFFFFFFFFUL - 10;

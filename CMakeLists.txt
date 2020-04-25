@@ -22,7 +22,6 @@ set (SRC_COMMON
     src/gtime.cpp
     src/gque.cpp
     src/glist.cpp
-    src/glist-s.cpp
 	src/gmmap.cpp
 	src/gsocket.cpp
 	src/gtockenizer.cpp
@@ -48,7 +47,6 @@ set(SRC_GTHREAD
 set(SAMPLES
 	samples/ex-time.cpp
     samples/ex-list.cpp
-    samples/ex-list-s.cpp
 	samples/ex-que.cpp
 	samples/ex-mmap.cpp
 	samples/ex-tok.cpp

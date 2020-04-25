@@ -22,10 +22,10 @@ void *foo(void *data)
     gcl::nanotick_t elapsed = 0;
     for (int i=0; i<10; i++) {
         gcl::nanotick_t tm = gcl::chrono::nanoTicks();
-		printf( "tid=%ld count=%i nanotick=%lld elapsed=%lld\n", val, i, tm, elapsed);
-        // gcl::sleep(100);
-        gcl::nanosleep(100000000);
+        gcl::sleep(300);
+        // gcl::nanosleep(500000000);
         elapsed = gcl::chrono::nanoElapsed(tm);
+		printf( "tid=%d count=%i nanotick=%lu elapsed=%lu\n", val, i, tm, elapsed);
     }
 	return 0;
 }

@@ -80,7 +80,7 @@ gcl_api int gcl::gthread::join(void **thread_return) const
 gcl_api int gcl::gthread::stop()
 {
 	if ( m_t == GTHREAD_NULL ) return ERROR_INVALID_HANDLE;
-	if ( gthread_self() == m_t ) gthread_exit(0);
+	// if ( gthread_self() == m_t ) gthread_exit(0);
 	int r = gthread_cancel(m_t);
 	if ( r != 0 ) return r;
 	return join(0);

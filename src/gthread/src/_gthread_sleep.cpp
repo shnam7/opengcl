@@ -78,13 +78,10 @@ gcl_api void gthread_nanosleep(u64_t nsec) {
 
 #else
 #include <time.h>
-#include <pthread.h>
 
 void gthread_nanosleep(u64_t nsec)
-{
-    struct timespec ts = { (long)nsec / 1000, (long)(nsec % 1000) * 1000000};
+{   struct timespec ts = { (long)(nsec / 1000000000L), (long)((nsec % 1000000000))};
     nanosleep(&ts, 0);
-    // pthread_testcancel();
 }
 
 void gthread_sleep(u32_t msec) {
