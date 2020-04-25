@@ -15,25 +15,7 @@
  */
 
 #pragma once
-
-#if !defined( _WIN32 )
-#include <semaphore.h>
-#endif
-
-#if defined( _WIN32 ) && defined(_DLL)
-#ifdef GCL_EXPORTS
-#define GCLAPI		__declspec(dllexport)
-#else
-#define GCLAPI		__declspec(dllimport)
-#endif
-#else
-#define GCLAPI
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+#include "gcldef.h"
 
 #if defined( _WIN32 )	/* win32 port */
 
@@ -44,22 +26,21 @@ typedef struct {
 
 
 /* current gsem implementation ignores pshared argument */
-GCLAPI int gsem_init(gsem_t *sem, int pshared, unsigned int val);
+gcl_api int gsem_init(gsem_t *sem, int pshared, unsigned int val);
 
-GCLAPI int gsem_destroy(gsem_t *sem);
+gcl_api int gsem_destroy(gsem_t *sem);
 
-GCLAPI int gsem_wait(gsem_t *sem);
+gcl_api int gsem_wait(gsem_t *sem);
 
-GCLAPI int gsem_trywait(gsem_t *sem);
+gcl_api int gsem_trywait(gsem_t *sem);
 
-GCLAPI int gsem_post(gsem_t *sem);
+gcl_api int gsem_post(gsem_t *sem);
 
-GCLAPI int gsem_getvalue(gsem_t *sem, int *pval);
+gcl_api int gsem_getvalue(gsem_t *sem, int *pval);
 
 #else	/* unix port */
-
+#include <semaphore.h>
 typedef sem_t		gsem_t;
-
 
 /* current gsem implementation ignores pshared argument
  * and so does current GNU implementation */
@@ -84,20 +65,19 @@ static inline int gsem_getvalue(gsem_t *sem, int *sval)
 #endif
 
 
-#ifdef __cplusplus
-}
+namespace gcl {
 
 //--------------------------------------------------------------------
-//	class GSem
+//	class semaphore
 //--------------------------------------------------------------------
-class GCLAPI GSem {
+class gcl_api gsem {
 protected:
 	gsem_t		m_sem;
 
 public:
-	GSem(unsigned int val=0) { gsem_init(&m_sem, 0, val); }
+	gsem(unsigned int val=0) { gsem_init(&m_sem, 0, val); }
 
-	~GSem() { gsem_destroy(&m_sem); }
+	~gsem() { gsem_destroy(&m_sem); }
 
 	int wait() { return gsem_wait(&m_sem); }
 
@@ -108,4 +88,4 @@ public:
 	int getValue(int *pval) { return gsem_getvalue(&m_sem, pval); }
 };
 
-#endif
+} // namespace gcl

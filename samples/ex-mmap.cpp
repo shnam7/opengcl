@@ -13,23 +13,23 @@
 
 int main()
 {
-	GMMapFile gmm;
-	const char *cp = gmm.mmap_ro( "../samples/ex-mmap.cpp" );
+	gcl::mmapfile mfile;
+	const char *cp = mfile.mmap_ro( "../samples/ex-mmap.cpp" );
 
-	size_t size = gmm.getSize();
+	size_t size = mfile.getSize();
 	printf( "File mapping: r=%p Size=%zu\n", cp, size );
 	for (unsigned i=0; i<size; ++i)
-		printf( "%c", gmm[i] );
+		printf( "%c", mfile[i] );
 
-	gmm.close();
+	mfile.close();
 
-	char *p = gmm.mmap_vrw( 1024*1024 );
-	size = gmm.getSize();
+	char *p = mfile.mmap_vrw( 1024*1024 );
+	size = mfile.getSize();
 	printf( "Virtual memory mapping: r=%p Size=%zu\n", p, size );
 	memset( p, 'A', size );
 	for (unsigned i=0; i<size; ++i)
 	{
-		if ( gmm[i] != 'A' )
+		if ( mfile[i] != 'A' )
 		{
 			printf( "-->Error: data was not written.\n" );
 			return -1;

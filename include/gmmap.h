@@ -1,23 +1,13 @@
 /*
- *	* gmmap.h
+ *  @packaage OpenGCL
  *
- *	OpenGCL Module : Generic Memory Mapped IO
- *
- *	Written by Soo-Hyuk Nam.
- *		2003. 7. 11. Fri.
- *
- *	History:
- *		2003/07/11: ported to unix(Linux)
- *		2002/07/24: First written for windows.
- *
- *	Notes:
- *		- All the functions returns 0 on success, nonzero code on error,
- *		  unless specified otherwise.
+ *  @module gmmap - memory mapped file
  */
 
 #pragma once
-
+#include "gcldef.h"
 #include <sys/types.h>
+
 #if defined( _WIN32 )
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -25,15 +15,8 @@
 #include <sys/mman.h>
 #endif
 
-#if defined( _WIN32 ) && defined(_DLL)
-#ifdef GCL_EXPORTS
-#define gcl_api		__declspec(dllexport)
-#else
-#define gcl_api		__declspec(dllimport)
-#endif
-#else
-#define gcl_api
-#endif
+
+namespace gcl {
 
 #if defined( _WIN32 )
 typedef _off_t		off_t;
@@ -42,17 +25,15 @@ typedef _off_t		off_t;
 //--------------------------------------------------------------------
 //	class GMMap
 //--------------------------------------------------------------------
-class gcl_api GMMap {
+class gcl_api gmmap {
 protected:
-	char				*m_ptr;
-	size_t		        m_size;
-	void                *m_hMap;
+	char				*m_ptr      = 0;
+	size_t		        m_size      = 0;
+	void                *m_hMap     = 0;
 
 public:
-	GMMap();
-	~GMMap();
-
-	//--- manipulators
+	gmmap() {}
+	~gmmap() { close(); }
 
 	// read only mappings
 	const char *mmap_ro(int filedes, off_t offset, size_t size, const char *name=0)
@@ -112,30 +93,27 @@ protected:
 //--------------------------------------------------------------------
 //	class GMMapFile
 //--------------------------------------------------------------------
-class gcl_api GMMapFile : public GMMap {
+class gcl_api mmapfile : public gmmap {
 protected:
-	int			m_fd;		// file descriptor
+	int			m_fd = -1;  // file descriptor
 
 public:
-	GMMapFile();
-	~GMMapFile();
+	mmapfile() {}
+	~mmapfile() { close(); }
 
 	//--- manipulators
 	// read only mappings
-	const char *mmap_ro(const char *filePathName, off_t offset,
-			size_t size, const char *name=0)
+	const char *mmap_ro(const char *filePathName, off_t offset, size_t size, const char *name=0)
 		{ return _mmap(filePathName, offset, size, true, name ); }
 
-	const char *mmap_ro(const char *filePathName, off_t offset,
-			const char *name=0)
+	const char *mmap_ro(const char *filePathName, off_t offset, const char *name=0)
 		{ return _mmap(filePathName, offset, 0, true, name ); }
 
 	const char *mmap_ro(const char *filePathName, const char *name=0)
 		{ return _mmap(filePathName, 0, 0, true, name); }
 
 	// read/write mappings
-	char *mmap_rw(const char *filePathName, off_t offset,
-			size_t size, const char *name=0)
+	char *mmap_rw(const char *filePathName, off_t offset, size_t size, const char *name=0)
 		{ return _mmap(filePathName, offset, size, false, name ); }
 
 	char *mmap_rw(const char *filePathName, off_t offset, const char *name=0)
@@ -154,3 +132,5 @@ protected:
 	char *_mmap(const char *filePathName, off_t offset,
 			size_t size, bool readonly, const char *name);
 };
+
+} // namespace gcl

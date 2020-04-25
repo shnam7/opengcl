@@ -21,7 +21,6 @@
 
 #if defined( _WIN32 )
 #include <io.h>
-
 #else
 #include <unistd.h>
 #endif
@@ -45,19 +44,9 @@ static size_t _filelength(int filedes)
 #endif
 
 //--------------------------------------------------------------------
-//	class GMMap unix impl.
+//	class gcl::mmap unix impl.
 //--------------------------------------------------------------------
-gcl_api GMMap::GMMap()
-: m_ptr(0), m_size(0) , m_hMap(0)
-{
-}
-
-gcl_api GMMap::~GMMap()
-{
-	close();
-}
-
-gcl_api void GMMap::close()
+gcl_api void gcl::gmmap::close()
 {
 	if ( !m_ptr ) return;
 #if !defined( _WIN32 )
@@ -73,7 +62,7 @@ gcl_api void GMMap::close()
 	m_ptr = 0;
 }
 
-gcl_api char *GMMap::_mmap(int filedes, off_t offset, size_t size,
+gcl_api char *gcl::gmmap::_mmap(int filedes, off_t offset, size_t size,
 		bool readonly, const char *name)
 {
 	if ( isValid() ) close();
@@ -84,7 +73,7 @@ gcl_api char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 	if ( offset == 0 )
 	{
 		m_size = size==0 ? _filelength(filedes) : size;
-		m_ptr = (char *)mmap( 0, m_size, prot, flags, filedes, 0 );
+		m_ptr = (char *)::mmap( 0, m_size, prot, flags, filedes, 0 );
 		m_hMap = m_ptr;
 	}
 	else
@@ -94,7 +83,7 @@ gcl_api char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 		if ( pos_base ) pos_base *= page_size;
 		int pos_offs = offset % page_size;
 		m_size = size==0 ? _filelength(filedes)-offset : size;
-		m_ptr = (char *)mmap( 0, m_size, prot, flags, filedes, pos_base );
+		m_ptr = (char *)::mmap( 0, m_size, prot, flags, filedes, pos_base );
 		m_hMap = m_ptr;
 		if ( m_ptr ) m_ptr += pos_offs;
 	}
@@ -142,21 +131,11 @@ gcl_api char *GMMap::_mmap(int filedes, off_t offset, size_t size,
 
 
 //--------------------------------------------------------------------
-//	class GMMapFile
+//	class gcl::mmapfile
 //--------------------------------------------------------------------
-gcl_api GMMapFile::GMMapFile()
-	: m_fd(-1)
+gcl_api void gcl::mmapfile::close()
 {
-}
-
-gcl_api GMMapFile::~GMMapFile()
-{
-	close();
-}
-
-gcl_api void GMMapFile::close()
-{
-	GMMap::close();
+	gcl::gmmap::close();
 	if ( m_fd != -1 )
 	{
 #if defined ( _MSC_VER )
@@ -168,16 +147,16 @@ gcl_api void GMMapFile::close()
 	}
 }
 
-gcl_api size_t GMMapFile::getFileLength() const
+gcl_api size_t gcl::mmapfile::getFileLength() const
 {
 	return m_fd==-1 ? 0 : _filelength( m_fd );
 }
 
-gcl_api char *GMMapFile::_mmap(const char *filePathName, off_t offset, size_t size,
+gcl_api char *gcl::mmapfile::_mmap(const char *filePathName, off_t offset, size_t size,
 		bool bReadOnly, const char *name)
 {
 	if ( isValid() ) close();
 	m_fd = open( filePathName, bReadOnly ? O_RDONLY : O_RDWR );
 	if ( m_fd == -1 ) return 0;
-	return GMMap::_mmap( m_fd, offset, size, bReadOnly, name );
+	return gcl::gmmap::_mmap( m_fd, offset, size, bReadOnly, name );
 }

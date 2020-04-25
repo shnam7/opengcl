@@ -1,28 +1,23 @@
 //
 //		* exthread_x.cpp
 //
-//		OpenGCL Example: GThread operations
+//		OpenGCL Example: gcl::thread operations
 //
 //		Written by Soo-Hyuk Nam.
 //			2003. 4. 29 Tue.
 //
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
 /* refer to notes in gthread.h and /usr/include/features.h */
 
 #include "gthread.h"
 #include <stdio.h>
 #include <gtime.h>
 
-static GRWLock _rwlock;
-
 /*
 //--------------------------------------------------------------------
 //	class MyThread
 //--------------------------------------------------------------------
-class MyThread : public GThread {
+class MyThread : public gcl::thread {
 protected:
 	int		m_val;
 	int		m_inc;
@@ -43,7 +38,7 @@ int MyThread::run()
 		testCancel();
 		printf( "MyThread with inc %d: %d\n", m_inc, m_val );
 		m_val += m_inc;
-		gtime_msleep( 1 );
+		gcl::sleep( 1 );
 	}
 	return 0;
 }
@@ -54,16 +49,16 @@ int MyThread::run()
 //--------------------------------------------------------------------
 class MsgPrinter : public GRunnable {
 protected:
-	virtual int run(GThread *pThread);
+	virtual int run(gcl::thread *pThread);
 };
 
-int MsgPrinter::run(GThread *pThread)
+int MsgPrinter::run(gcl::thread *pThread)
 {
 	for ( ;; )
 	{
 		pThread->testCancel();
 		printf( "Hello!!!!\n" );
-		gtime_msleep( 1 );
+		gcl::sleep( 1 );
 	}
 	return 0;
 }
@@ -73,21 +68,21 @@ int MsgPrinter::run(GThread *pThread)
 //--------------------------------------------------------------------
 class AutoMsgPrinter : public GRunnable {
 protected:
-	GThread		m_t;
+	gcl::thread		m_t;
 
 public:
 	AutoMsgPrinter() { m_t.start(this); }
 	virtual ~AutoMsgPrinter() {}
-	virtual int run(GThread *pThread);
+	virtual int run(gcl::thread *pThread);
 };
 
-int AutoMsgPrinter::run(GThread *pThread)
+int AutoMsgPrinter::run(gcl::thread *pThread)
 {
 	for ( ;; )
 	{
 		pThread->testCancel();
 		printf( "Auto: Hello!!!!\n" );
-		gtime_msleep( 1 );
+		gcl::sleep( 1 );
 
 	}
 	return 0;
@@ -104,21 +99,21 @@ gsem_t sem;
 
 void *foo(void *)
 {
-	GThread *pT = GThread::getCurrent();
+	gcl::gthread *pT = gcl::gthread::getCurrent();
 	for (int i=0; i<5; ++i)
 	{
 		gthread_testcancel();
-		printf( "foo: Thread %ld running.\n", (long)pT->getThreadID() );
-		gtime_msleep( 100 );
+		printf( "foo: Thread %ld running.\n", (long)pT->threadID() );
+		gcl::sleep( 100 );
 	}
-	gtime_msleep(1000);
+	gcl::sleep(1000);
 
 	printf( "SEM post!!\n" );
 	gsem_post(&sem);
 
 
 	//printf( "foo: sleeping for 10 secs...\n" );
-	//gtime_msleep( 100000 );
+	gcl::sleep( 10000 );
 	//printf( "foo: woken up...\n" );
 
 	//printf( "foo: waiting for Mutex...(endless)!\n" );
@@ -139,8 +134,8 @@ int main()
 	gsem_init(&sem, 0, 0);
 	printf( "Starting...\n" );
 
-	GThread gt, gt1, gt2;
-	printf( "main: creating thread #%ld...\n", (long)gt.getThreadID() );
+	gcl::gthread gt, gt1, gt2;
+	printf( "main: creating thread #%ld...\n", (long)gt.threadID() );
 	if ( gt.start(foo, 0) != 0 )
 	{
 		printf( "thread creation failed.\n" );
@@ -156,8 +151,8 @@ int main()
 
 
 //	printf( "main: sleeping for 1 sec...\n" );
-//	gtime_msleep( 1000 );
-//	printf( "main: canceling thread #%ld1...\n", gt.getThreadID() );
+    gcl::sleep( 1000 );
+//	printf( "main: canceling thread #%ld1...\n", gt.threadID() );
 
 	void *retval = 0;;
 	gt.join( &retval );
@@ -177,7 +172,7 @@ int main()
 	/*
 
 	printf( "main: waiting 3 sec...\n" );
-	gtime_msleep( 3000 );
+	gcl::sleep( 3000 );
 	printf( "main: canceling thread #0...\n" );
 	s_sem.post();
 	t0.cancel();
@@ -190,7 +185,7 @@ int main()
 	t2.start();
 
 	MsgPrinter mp;
-	GThread t3;
+	gcl::thread t3;
 	t3.start( &mp );
 
 	AutoMsgPrinter amp;
@@ -201,7 +196,7 @@ int main()
 		if ( v >= 10 ) t2.cancel();
 		if ( v >= 20 ) t3.cancel();
 		if ( v >= 30 ) t1.cancel();
-		gtime_msleep( 1 );
+		gcl::sleep( 1 );
 	}
 	*/
 

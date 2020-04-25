@@ -1,250 +1,126 @@
 /*
-***************************************************************************
-*	This File was copied from linux kerrnel 2.4.21 source
-*	and adapted to OpenGCL.
-*
-*	Soo-Hyuk Nam
-*	2003. 10. 24
-*
-*	License: GPL
-***************************************************************************
-*/
+ *  @packaage OpenGCL
+ *
+ *  @module list -singly and doubly linked list
+ *
+ */
 
 #pragma once
 
-static inline void prefetch(const void *x) {;}
+#include "gcldef.h"
 
-/*
- * Simple doubly linked list implementation.
- *
- * Some of the internal functions ("__xxx") are useful when
- * manipulating whole lists rather than single entries, as
- * sometimes we already know the next/prev entries and we can
- * generate better code by using them directly rather than
- * using the generic single-entry routines.
- */
+namespace gcl {
 
-typedef struct list_head {
-	struct list_head *next, *prev;
-} list_head;
+//-----------------------------------------------------------------------------
+// doublely linked list
+//-----------------------------------------------------------------------------
+class _node {
+protected:
+    _node       *m_prev = this;
+    _node       *m_next = this;
+    template<typename T> friend class list;
 
-#define LIST_HEAD_INIT(name) { &(name), &(name) }
+public:
+    _node() {}
+    _node(_node *prev, _node *next) : m_prev(prev), m_next(next) {}
+    ~_node() { detach(); }
 
-#define LIST_HEAD(name) \
-	struct list_head name = LIST_HEAD_INIT(name)
-
-#define INIT_LIST_HEAD(ptr) do { \
-	(ptr)->next = (ptr); (ptr)->prev = (ptr); \
-} while (0)
-
-/*
- * Insert a new entry between two known consecutive entries.
- *
- * This is only for internal list manipulation where we know
- * the prev/next entries already!
- */
-static inline void __list_add(struct list_head *_new,
-			      struct list_head *prev,
-			      struct list_head *next)
-{
-	next->prev = _new;
-	_new->next = next;
-	_new->prev = prev;
-	prev->next = _new;
-}
-
-/**
- * list_add - add a new entry
- * @_new: new entry to be added
- * @head: list head to add it after
- *
- * Insert a new entry after the specified head.
- * This is good for implementing stacks.
- */
-static inline void list_add(struct list_head *_new, struct list_head *head)
-{
-	__list_add(_new, head, head->next);
-}
-
-/**
- * list_add_tail - add a new entry
- * @_new: new entry to be added
- * @head: list head to add it before
- *
- * Insert a new entry before the specified head.
- * This is useful for implementing queues.
- */
-static inline void list_add_tail(struct list_head *_new, struct list_head *head)
-{
-	__list_add(_new, head->prev, head);
-}
-
-/*
- * Delete a list entry by making the prev/next entries
- * point to each other.
- *
- * This is only for internal list manipulation where we know
- * the prev/next entries already!
- */
-static inline void __list_del(struct list_head *prev, struct list_head *next)
-{
-	next->prev = prev;
-	prev->next = next;
-}
-
-/**
- * list_del - deletes entry from list.
- * @entry: the element to delete from the list.
- * Note: list_empty on entry does not return true after this, the entry is in an undefined state.
- */
-static inline void list_del(struct list_head *entry)
-{
-	__list_del(entry->prev, entry->next);
-	entry->next = (list_head *) 0;
-	entry->prev = (list_head *) 0;
-}
-
-/**
- * list_del_init - deletes entry from list and reinitialize it.
- * @entry: the element to delete from the list.
- */
-static inline void list_del_init(struct list_head *entry)
-{
-	__list_del(entry->prev, entry->next);
-	INIT_LIST_HEAD(entry);
-}
-
-/**
- * list_move - delete from one list and add as another's head
- * @list: the entry to move
- * @head: the head that will precede our entry
- */
-static inline void list_move(struct list_head *list, struct list_head *head)
-{
-        __list_del(list->prev, list->next);
-        list_add(list, head);
-}
-
-/**
- * list_move_tail - delete from one list and add as another's tail
- * @list: the entry to move
- * @head: the head that will follow our entry
- */
-static inline void list_move_tail(struct list_head *list,
-				  struct list_head *head)
-{
-        __list_del(list->prev, list->next);
-        list_add_tail(list, head);
-}
-
-/**
- * list_empty - tests whether a list is empty
- * @head: the list to test.
- */
-static inline int list_empty(struct list_head *head)
-{
-	return head->next == head;
-}
-
-static inline void __list_splice(struct list_head *list,
-				 struct list_head *head)
-{
-	struct list_head *first = list->next;
-	struct list_head *last = list->prev;
-	struct list_head *at = head->next;
-
-	first->prev = head;
-	head->next = first;
-
-	last->next = at;
-	at->prev = last;
-}
-
-/**
- * list_splice - join two lists
- * @list: the new list to add.
- * @head: the place to add it in the first list.
- */
-static inline void list_splice(struct list_head *list, struct list_head *head)
-{
-	if (!list_empty(list))
-		__list_splice(list, head);
-}
-
-/**
- * list_splice_init - join two lists and reinitialise the emptied list.
- * @list: the new list to add.
- * @head: the place to add it in the first list.
- *
- * The list at @list is reinitialised
- */
-static inline void list_splice_init(struct list_head *list,
-				    struct list_head *head)
-{
-	if (!list_empty(list)) {
-		__list_splice(list, head);
-		INIT_LIST_HEAD(list);
-	}
-}
-
-/**
- * list_entry - get the struct for this entry
- * @ptr:	the &struct list_head pointer.
- * @type:	the type of the struct this is embedded in.
- * @member:	the name of the list_struct within the struct.
- */
-#define list_entry(ptr, type, member) \
-	((type *)((char *)(ptr)-(size_t)(&((type *)0)->member)))
-
-/**
- * list_for_each	-	iterate over a list
- * @pos:	the &struct list_head to use as a loop counter.
- * @head:	the head for your list.
- */
-#define list_for_each(pos, head) \
-	for (pos = (head)->next, prefetch(pos->next); pos != (head); \
-        	pos = pos->next, prefetch(pos->next))
-/**
- * list_for_each_prev	-	iterate over a list backwards
- * @pos:	the &struct list_head to use as a loop counter.
- * @head:	the head for your list.
- */
-#define list_for_each_prev(pos, head) \
-	for (pos = (head)->prev, prefetch(pos->prev); pos != (head); \
-        	pos = pos->prev, prefetch(pos->prev))
-
-/**
- * list_for_each_safe	-	iterate over a list safe against removal of list entry
- * @pos:	the &struct list_head to use as a loop counter.
- * @n:		another &struct list_head to use as temporary storage
- * @head:	the head for your list.
- */
-#define list_for_each_safe(pos, n, head) \
-	for (pos = (head)->next, n = pos->next; pos != (head); \
-		pos = n, n = pos->next)
-
-/**
- * list_for_each_entry	-	iterate over list of given type
- * @pos:	the type * to use as a loop counter.
- * @head:	the head for your list.
- * @member:	the name of the list_struct within the struct.
- */
-#define list_for_each_entry(pos, head, member)				\
-	for (pos = list_entry((head)->next, typeof(*pos), member),	\
-		     prefetch(pos->member.next);			\
-	     &pos->member != (head); 					\
-	     pos = list_entry(pos->member.next, typeof(*pos), member),	\
-		     prefetch(pos->member.next))
+    void append(_node *nod) { nod->m_next = m_next; nod->m_prev = this; m_next->m_prev = nod; m_next = nod; }
+    void prepend(_node *nod) { m_prev->append(nod); }
+    void detach() { m_prev->m_next = m_next; m_next->m_prev = m_prev; }
+    bool isDetached() { return m_next == this; }
+    unsigned length();  // count the length of the list it's atached
+};
 
 
-/* c++ extension */
-#ifdef __cplusplus
-typedef struct _xlist_head : public list_head {
-	_xlist_head() : obj(0) { INIT_LIST_HEAD((list_head *)this); }
-	_xlist_head(void *_obj) : obj(_obj) { INIT_LIST_HEAD((list_head *)this); }
-	void *obj;
-} xlist_head;
+template <class T = void>
+class list {
+public:
+    typedef _node   node;
 
-#define xlist_entry(ptr, type) ( (type *)(((xlist_head *)ptr)->obj) )
+protected:
+    _node           m_head;
 
-#endif	/* __cplusplus */
+public:
+    list() {}
+    ~list() { while (m_head.m_next) del((T *)m_head.m_next); }
+
+    void add(T *nod) { append(nod); }
+    void remove(T *node) { node->detach(); }
+    void del(T *node) { node->detach(); delete node; }
+
+    void append(T *nod) { m_head.prepend(nod); }
+    void prepend(T *nod) { m_head.append(nod); }
+
+    T *first() { return (T *)(m_head.m_next == &m_head ? 0 : m_head.m_next); }
+    T *last() { return (T *)(m_head.m_prev == &m_head ? 0 : m_head.m_prev); }
+    T *nextOf(T *nod = 0) {
+        if (!nod) { nod = (T *)&m_head; }
+        return (T *)((nod->m_next == (T *)&m_head) ? 0 : nod->m_next);
+    }
+
+    unsigned length() { return m_head.length(); }
+    bool isEmpty() { return m_head.isDetached(); }
+};
+
+typedef list<> glist;
+
+
+
+//-----------------------------------------------------------------------------
+// singly linked list
+//-----------------------------------------------------------------------------
+class snode {
+protected:
+    snode    *m_next = 0;
+    friend class gslist;
+    template<class T> friend class slist;
+
+public:
+    snode() {}
+};
+
+
+class gcl_api gslist {
+protected:
+    snode           *m_head = 0;
+
+public:
+    gslist() : m_head(0) {}
+    void append(snode *node);
+    void detach(snode *node);
+    snode *last();
+};
+
+
+template <typename T = void>
+class slist : public gslist {
+public:
+    typedef snode   node;
+
+public:
+    slist() {}
+    ~slist() { while (m_head) del((T *)m_head); }
+
+    void add(T *node) { prepend(node); }
+    void remove(T *node) { gslist::detach((snode *)node); delete node; }
+    void del(T *node) { remove(node); delete node; }
+
+    void append(T *node) { gslist::append((snode *)node); }
+    void prepend(T *node) { node->m_next = m_head; m_head = node; }
+
+    T *first() { return (T *)m_head; }
+    T *last() { return (T *)gslist::last(); }
+    T *nextOf(T *nod) { return (T *)(nod ? nod->m_next : 0); }
+
+    unsigned length()
+    {
+        unsigned count = 0;
+        snode *nod = m_head;
+        while (nod) { count++; nod = nod->m_next; }
+        return count;
+    }
+    bool isEmpty() { return m_head == 0; }
+};
+
+} // namespace gcl

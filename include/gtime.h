@@ -1,51 +1,27 @@
 /*
- *	* gtime.h
+ *  @packaage OpenGCL
  *
- *	OpenGCL Module : Generic Time-related Services
- *
- *	Written by Soo-Hyuk Nam.
- *		2004. 7. 1. Tue.
- *
- *	History:
- *		2003/07/01: First written.
- *
- *	Notes:
- *		- gtime_t uses milli-sec unit and its value wraps around to zero after 49.7 days.
- *		- gtime64_t uses nano sec unit and its value wraps around to zero after 884.9 yesrs(infinit?)
- *			--> not supported yat. Is it necessary?
+ *  @module time - time functions
  */
 
 #pragma once
+#include "gcldef.h"
 
-#if defined( _WIN32 ) && defined(_DLL)
-#ifdef GCL_EXPORTS
-#define gcl_api		__declspec(dllexport)
-#else
-#define gcl_api		__declspec(dllimport)
-#endif
-#else
-#define gcl_api
-#endif
+namespace gcl {
 
-#define GTIME_INFINITE	((unsigned long)-1)
+typedef u32_t       tick_t;
+typedef u64_t       nanotick_t;
 
+namespace chrono {
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// get time elapsed since system start in nanosec
+gcl_api nanotick_t nanoTicks();
+inline nanotick_t nanoElapsed(nanotick_t tm) { return nanoTicks() - tm; }
 
-typedef unsigned long int		gtime_t;
+// get time elapsed since system start in msec
+inline tick_t ticks() { return (tick_t)(nanoTicks() / 1000); };
+inline tick_t elapsed(tick_t tm) { return ticks() - tm; }
 
-gcl_api gtime_t gtime_get_ticks();				/* returns current time in msec */
-gcl_api gtime_t gtime_get_diff(gtime_t tm1, gtime_t tm2);	/* returns elapsed time since tm */
+} // namespace chrono
 
-static inline gtime_t gtime_get_elapsed(gtime_t tm)			/* returns elapsed time since tm */
-	{ return gtime_get_diff(tm, gtime_get_ticks()); }
-
-/* thread-aware sleep function: The calling thread will be awakened if it is canceled. */
-gcl_api void gtime_msleep(gtime_t msec);
-
-
-#ifdef __cplusplus
-};
-#endif
+} // namespace gcl

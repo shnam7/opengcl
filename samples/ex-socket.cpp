@@ -7,9 +7,9 @@
 //			2002. 6. 4. Tue.
 //
 
+#include "gsocket.h"    // socket should be included before window.h
+#include "gthread.h"
 #include <stdio.h>
-#include <gthread.h>
-#include <gsocket.h>
 #include <string.h>
 
 #if !defined( _WIN32 )
@@ -21,8 +21,8 @@
 
 static void *_serv_d(void *data)
 {
-	GThread *pT = GThread::getCurrent();
-	GSocket gs( *(socket_t *)data );
+	gcl::gthread *pT = gcl::gthread::getCurrent();
+	gcl::socket gs( *(socket_t *)data );
 	if ( !gs.isValid() ) { delete pT; return 0; }
 	gs.setNBIO( true );
 
@@ -52,7 +52,7 @@ static void *_serv_d(void *data)
 void _server()
 {
 	printf( "Starting server...\n" );
-	GSocket gsListener;
+	gcl::socket gsListener;
 	int r = gsListener.createSocket( true );
 	if ( !r )
 	{
@@ -78,12 +78,12 @@ void _server()
 		if ( sock == INVALID_SOCKET ) continue;
 		printf( "client from %s accepted.\n", inet_ntoa(sa.sin_addr) );
 
-		GThread *pT = new GThread;
+		gcl::gthread *pT = new gcl::gthread;
 		pT->start( _serv_d, (void *)&sock );
 /*		pid_t pid = fork();
 		if ( pid == 0 )	// child process
 		{
-			GSocket gs(sock);
+			gcl::socket gs(sock);
 			if ( !gs.isValid() ) return;
 			if ( !gs.setNBIO( true ) ) printf("error at \n");
 			char buf[1024];
@@ -116,7 +116,7 @@ void _client()
 	printf( "Starting client...\n" );
 
 	//--- create socket
-	GSocket gs;
+	gcl::socket gs;
 	gs.createSocket( true );
 	//gs.connect( inet_addr("127.0.0.1"), EX_PORT );
 	// gs.connect( "127.0.0.1", EX_PORT );

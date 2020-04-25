@@ -1,183 +1,83 @@
 /*
- *	* gque.h
+ *  @packaage OpenGCL
  *
- *	OpenGCL Module : Generic Queue with extraordinary features.
+ *  @module gque - circular queue
  *
- *	Written by Soo-Hyuk Nam.
- *		2003. 11. 26. Wed.
- *
- *	History:
- *		2003/11/26: First written.
- *		2003/08/25: Prototype designed(IoQue).
  */
 
 #pragma once
+#include "gcldef.h"
 
-#include <stddef.h>
+namespace gcl {
 
-#if defined( _WIN32 ) && defined(_DLL)
-#ifdef GCL_EXPORTS
-#define gcl_api		__declspec(dllexport)
-#else
-#define gcl_api		__declspec(dllimport)
-#endif
-
-#else
-#include <stdint.h>
-#define gcl_api
-#endif
-
-/*--------------------------------------------------------------------
- *	GQue: the type independent queue
- *--------------------------------------------------------------------*/
-typedef struct _qque_t {
-	unsigned		begin;
-	unsigned		end;
-	unsigned		head;
-	unsigned		tail;
-	unsigned		item_size;
-	unsigned		remainder;
-	uintptr_t		*opt;		/* optional param, usally for locking */
+typedef struct _gque_t {
+    unsigned begin;     // constant: start of que (end of que contro block)
+    unsigned end;       // constant: end of que
+    unsigned head;      // variable: que head
+    unsigned tail;      // varibale: que tail
+    unsigned item_size; // constant: entry item size
 } gque_t;
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-gcl_api gque_t *gque_create(unsigned item_size, unsigned capacity);
-
-gcl_api int gque_delete(gque_t *gq);
-
-inline unsigned gque_calc_bufsize(unsigned item_size, unsigned capacity)
-{
-	return sizeof(gque_t)+(capacity+1)*item_size;
-}
-
-inline unsigned gque_calc_capacity(unsigned item_size, unsigned bufsize)
-{
-	return (bufsize-sizeof(gque_t))/item_size - 1;
-}
-
-gcl_api gque_t *gque_init(unsigned item_size, unsigned capacity, char *buf);
-
-inline gque_t *gque_init2(unsigned item_size, char *buf, unsigned bufsize)
-	{ return gque_init(item_size, gque_calc_capacity(item_size, bufsize), buf); }
-
-inline void gque_reset(gque_t *gq) { gq->head = gq->tail = gq->begin; }
-
-inline char *gque_begin(gque_t *gq) { return ((char *)gq) + gq->begin; }
-
-inline char *gque_end(gque_t *gq) { return ((char *)gq) + gq->end; }
-
-inline char *gque_head(gque_t *gq) { return ((char *)gq) + gq->head; }
-
-inline char *gque_tail(gque_t *gq) { return ((char *)gq) + gq->tail; }
-
-inline unsigned gque_item_size(gque_t *gq) { return gq->item_size; }
-
-inline unsigned gque_remainder(gque_t *gq) { return gq->remainder; }
-
-
-gcl_api int gque_push_tail(gque_t *gq, const char *item);	// return type is bool
-
-gcl_api int gque_pop_head(gque_t *gq);				// return type is bool
-
-inline void gque_pop_all(gque_t *gq) { gq->head = gq->tail; }
-
-gcl_api int gque_shift_head(gque_t *gq, unsigned n);	// return type is bool
-
-gcl_api int gque_shift_tail(gque_t *gq, unsigned n);	// return type is bool
-
-inline int gque_is_empty(gque_t *gq) { return gq->head==gq->tail; } // return type is bool
-
-gcl_api int gque_is_full(gque_t *gq);		// return type is bool
-
-gcl_api unsigned gque_get_entries(gque_t *gq);
-
-gcl_api unsigned gque_get_linear_entries(gque_t *gq);
-
-gcl_api unsigned gque_get_rooms(gque_t *gq);
-
-gcl_api unsigned gque_get_linear_rooms(gque_t *gq);
-
-inline unsigned gque_get_capacity(gque_t *gq) { return ((gq->end-gq->begin)/gq->item_size) - 1; }
-
-gcl_api int gque_request_linear_rooms(gque_t *gq, unsigned size);
-
-#ifdef __cplusplus
-};
-
-
-//--------------------------------------------------------------------
-//	class GQue
-//--------------------------------------------------------------------
-class gcl_api GQue {
+class gcl_api gque {
 protected:
-	gque_t		*m_q;
+    gque_t          *m_q;
+    template<class T> friend class queue;
 
 public:
-	GQue() : m_q(0) {}
-	~GQue() { destroy(); }
+    gque();
+    gque(unsigned capacity, unsigned item_size);
+    ~gque();
 
-	//--- manipulators
-	bool create(unsigned item_size, unsigned capacity)
-	{
-		if (m_q) gque_delete(m_q);
-		m_q=gque_create(item_size, capacity);
-		return m_q != 0;
-	}
-	bool create(unsigned item_size, unsigned capacity, char *qbuf)
-	{
-		if (m_q) gque_delete(m_q);
-		m_q = gque_init(item_size, capacity, qbuf);
-		return m_q != 0;
-	}
-	bool create(unsigned item_size, char *qbuf, unsigned bufsize)
-	{
-		if (m_q) gque_delete(m_q);
-		m_q = gque_init2(item_size, qbuf, bufsize);
-		return m_q != 0;
-	}
-	bool destroy() { if (m_q) { gque_delete(m_q); m_q=0; } return true; }
+	void reset(unsigned capacity, unsigned itemSize);
+	void reset() const { m_q->head = m_q->tail = m_q->begin; }
 
-	void reset() const { gque_reset(m_q); }
-	bool pushTail(const char *item) const
-		{ return gque_push_tail(m_q, item) != 0; }
-	bool popHead() const { return gque_pop_head(m_q) != 0; }
-	void popAll() const {  gque_pop_all(m_q); }
-	bool shiftHead(int n) { return gque_shift_head(m_q, n) != 0; }
-	bool shiftTail(int n) { return gque_shift_tail(m_q, n) != 0; }
-	bool requestLinearRooms(unsigned size)
-		{ return gque_request_linear_rooms(m_q, size) != 0; }
-	bool attach(gque_t *gq)
-	{
-		if ( !gq ) return false;
-		if ( gq==m_q ) return true;
-		if (m_q) destroy();
-		m_q=gq;
-		return true;
-	}
-	bool detach() { m_q=0; return true; }
+	bool put(const void *item) const;
+	bool get(void *item) const { return pop(item); }
+    bool push(const void *item) const;
+	bool pop(void *item=0) const;
+	void clear() const { m_q->head = m_q->tail; }
+	void *peek() const { return isEmpty() ? 0 : _ptr(m_q->head); }
+	void *peekNext(const void *current=0) const;
 
 	//--- accessors
-	char *head() const { return gque_head(m_q); }
-	char *tail() const { return gque_tail(m_q); }
-	char *begin() const { return gque_begin(m_q); }
-	char *end() const { return gque_end(m_q); }
-	unsigned itemSize() { return gque_item_size(m_q); }
-	unsigned remainder() { return gque_remainder(m_q); }
+	void *head() const { return _ptr(m_q->head); }
+	void *tail() const { return _ptr(m_q->tail); }
+	void *begin() const { return _ptr(m_q->begin); }
+	void *end() const { return _ptr(m_q->end); }
+	unsigned itemSize() { return m_q->item_size; }
 
-	bool isEmpty() const { return gque_is_empty(m_q) != 0; }
-	bool isFull() const { return gque_is_full(m_q) != 0; }
-	unsigned getEntries() const { return gque_get_entries(m_q); }
-	unsigned getLinearEntries() const { return gque_get_linear_entries(m_q); }
-	unsigned getRooms() const { return gque_get_rooms(m_q); }
-	unsigned getLinearRooms() const { return gque_get_linear_rooms(m_q); }
-	unsigned getCapacity() const { return gque_get_capacity(m_q); }
+    bool isEmpty() const { return m_q->head == m_q->tail; }
+    bool isFull() const;
+	unsigned length() const;        // # of entries
+    unsigned available() const;
+    unsigned capacity() const;
 
-	bool isValid() const { return m_q != 0; }
-	gque_t *getQue() { return m_q; }
+protected:
+    void *_ptr(unsigned offs) const { return (void *)((char *)m_q + offs); }
 };
 
-#endif
+
+template <class T>
+class queue : public gque {
+public:
+    queue() {}
+    queue(unsigned capacity): gque(capacity, sizeof(T)) {}
+
+    void reset(unsigned capacity) { gque::reset(capacity, sizeof(T)); };
+
+	bool put(const T *item) const { return gque::put(item); }
+	bool get(T *item) const { return gque::get(item); }
+	bool push(const T *item) const { return gque::push(item); }
+	bool pop(T *item) const { return gque::pop(item); }
+    T *peek(T) const { return (T *)gque::peek(); }
+	T *peekNext(const T *peek=0) const { return (T *)gque::peekNext(peek); }
+
+	//--- accessors
+	T *head() const { return (T *)gque::head(); }
+	T *tail() const { return (T *)gque::tail(); }
+	T *begin() const { return (T *)gque::begin(); }
+	T *end() const { return (T *)gque::end(); }
+};
+
+}

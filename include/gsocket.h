@@ -1,7 +1,7 @@
 /*
- *	* gsocket.h
+ *  @package OpenGCL
  *
- *	OpenGCL Module : gsocket - BSD Socket extension and C++ wrappers
+ *  @module socket - BSD Socket extension and C++ wrappers
  *
  *	Written by Soo-Hyuk Nam.
  *		2001. 11. 27. Tue.
@@ -17,13 +17,14 @@
  *		- In NBIO mode, use isWritable() - not isReadable() - to check
  *		  the result of connect().
  *		- isWritable() returns false when peer socket closed, but
- *		  isReadable() does'nt. So, receiving side need to check if
+ *		  isReadable() doesn't. So, receiving side need to check if
  *		  any data can be actually read when isReadable() returns true,
  *		  by checking the return value(actual read count) of peek() or
  *		  other receving functions.
  */
 
 #pragma once
+#include "gcldef.h"
 
 #if defined( _WIN32 )
 #include <winsock2.h>
@@ -32,16 +33,6 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
-#endif
-
-#if defined( _WIN32 ) && defined(_DLL)
-#ifdef GCL_EXPORTS
-#define gcl_api		__declspec(dllexport)
-#else
-#define gcl_api		__declspec(dllimport)
-#endif
-#else
-#define gcl_api
 #endif
 
 
@@ -61,10 +52,6 @@ typedef uintptr_t   socket_t;
 
 typedef u_long		ipaddr_t;
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*--- V protocol */
 #if defined(_WIN32)
@@ -173,23 +160,19 @@ inline int gsock_getlasterror() { return errno; }
 gcl_api int gsock_set_NBIO(socket_t sock, int nbio);
 
 inline int gsock_set_receive_buffer_size(socket_t sock, int size)
-	{ return setsockopt(sock, SOL_SOCKET, SO_RCVBUF,
-		(char *)&size, sizeof(int))==0; }
+	{ return setsockopt(sock, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof(int))==0; }
 
 inline int gsock_set_send_buffer_size(socket_t sock, int size)
-	{ return setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&size,
-		sizeof(int))==0; }
+	{ return setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (char *)&size, sizeof(int))==0; }
 
-inline int gsock_get_socket_name(socket_t sock, struct sockaddr *name,
-		socklen_t *namelen)
+inline int gsock_get_socket_name(socket_t sock, struct sockaddr *name, socklen_t *namelen)
 	{ return getsockname(sock, name, namelen)==0; }
 
 inline int gsock_get_socket_name2(socket_t sock, struct sockaddr_in *name)
 	{ socklen_t namelen=sizeof(struct sockaddr_in);
 	  	return gsock_get_socket_name(sock, (struct sockaddr *)name, &namelen); }
 
-inline int gsock_get_peer_name(socket_t sock, struct sockaddr *name,
-		socklen_t *namelen)
+inline int gsock_get_peer_name(socket_t sock, struct sockaddr *name, socklen_t *namelen)
 	{ return getpeername(sock, name, namelen)==0; }
 
 inline int gsock_get_peer_name2(socket_t sock, struct sockaddr_in *name)
@@ -252,28 +235,28 @@ inline int gsock_simple_reply(socket_t sock, unsigned int code,
 
 gcl_api ipaddr_t gsock_hostaddr(const char *hostname);
 
-#ifdef __cplusplus
-};
+
+namespace gcl {
 
 //--------------------------------------------------------------------
 //	class GSocket
 //--------------------------------------------------------------------
-class gcl_api GSocket {
+class gcl_api socket {
 protected:
 	socket_t		m_sock;
 
 private:
-	GSocket(const GSocket& gsock);		// copy constructor is not allowed.
-	GSocket operator=(socket_t sock);	// assignment is not allowed
+	socket(const socket& gsock);		// copy constructor is not allowed.
+	socket operator=(socket_t sock);	// assignment is not allowed
 
 public:
 	enum { DEF_BACKLOG=5 };
 
 public:
 	//--- creators
-	GSocket() : m_sock(-1) {}
-	GSocket(socket_t sock) : m_sock(sock) {}
-	~GSocket() { closeSocket(); }
+	socket() : m_sock(-1) {}
+	socket(socket_t sock) : m_sock(sock) {}
+	~socket() { closeSocket(); }
 
 	//--- manipulations
 	bool createSocket(int type, unsigned long nbio);
@@ -369,4 +352,5 @@ public:
 	//--- operators
 	operator socket_t() const { return m_sock; }
 };
-#endif
+
+} // namespace gcl

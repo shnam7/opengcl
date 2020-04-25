@@ -11,84 +11,80 @@ endif()
 if (MSVC)
     set(COMPILE_OPTIONS ${COMPILE_OPTIONS} -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
+
+#--- variables
 add_compile_options(${COMPILE_OPTIONS})
 add_compile_definitions(${COMPILE_DEFINITIONS})
-
+include_directories(include src/gthread/include)
 
 #--- source files
-include_directories(include)
-
-set(SRC
-    src/gtime.c
-	src/gque.c
-	src/gmbox.c
+set (SRC_COMMON
+    src/gtime.cpp
+    src/gque.cpp
+    src/glist.cpp
+    src/glist-s.cpp
 	src/gmmap.cpp
-	src/gsocket.c
-	src/gsocket_x.cpp
-	src/gthread_x.cpp
-	src/gtok.c
-	src/gutil.c
-	src/gtime.c
-	src/gthread.c
+	src/gsocket.cpp
+	src/gtockenizer.cpp
+	src/gutil.cpp
+	src/gthread.cpp
+    src/gsem.cpp
+    src/gevent.cpp
 )
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    list(APPEND SRC_COMMON src/gdmsg.cpp)
+endif()
+
+set(SRC_GTHREAD
+    src/gthread/src/gthread_mutex.cpp
+    src/gthread/src/gthread_cond.cpp
+    src/gthread/src/gthread_rwlock.cpp
+    src/gthread/src/_gthread.cpp
+    src/gthread/src/_gthread_self.cpp
+    src/gthread/src/_gthread_sleep.cpp
+)
+
+# samples source
 set(SAMPLES
 	samples/ex-time.cpp
     samples/ex-list.cpp
+    samples/ex-list-s.cpp
 	samples/ex-que.cpp
 	samples/ex-mmap.cpp
+	samples/ex-tok.cpp
+	samples/ex-thread.cpp
+	samples/ex-thread_x.cpp
 	samples/ex-mbox.cpp
 	samples/ex-socket.cpp
-	samples/ex-thread.c
-	samples/ex-thread_x.cpp
-	samples/ex-tok.cpp
 )
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    list(APPEND SRC src/gdmsg.c)
-endif()
+set (SRC ${SRC_COMMON} ${SRC_GTHREAD})
+
 
 # Microsoft Visual Studio support
-if (MSVC)
-    include_directories(src/win32)
-	list(APPEND SRC
-		src/win32/gsem.c
-		src/win32/gthread.c
-		src/win32/gthread_cond.c
-		src/win32/gthread_mutex.c
-		src/win32/gthread_rwlock.c
-		src/win32/gthread_self.c
-		src/win32/opengcl_dll.cpp
-    )
-    list(REMOVE_ITEM SRC src/gthread.c)
+if (WIN32)  # NOT for CYGWIN
+    list(APPEND SRC src/win32/opengcl_dll.cpp )
 endif()
 
 # gthread not supported in MINGW (gtime, gmbox depends on gthread)
-if (MINGW)
-    list(REMOVE_ITEM SRC
-        src/gtime.c
-        # src/gque.c
-        src/gmbox.c
-        src/gmmap.cpp
-        src/gsocket.c
-        src/gsocket_x.cpp
-        src/gthread_x.cpp
-        src/gtok.c
-        src/gutil.c
-        src/gtime.c
-        src/gthread.c
-    )
-    list(REMOVE_ITEM SAMPLES
-        samples/ex-time.cpp
-        samples/ex-list.cpp
-        # samples/ex-que.cpp
-        samples/ex-mmap.cpp
-        samples/ex-mbox.cpp
-        samples/ex-socket.cpp
-        samples/ex-thread.c
-        samples/ex-thread_x.cpp
-        samples/ex-tok.cpp
-    )
-endif()
+# if (MINGW)
+#     list(REMOVE_ITEM SRC
+#         # src/gmbox.cpp
+#         # src/gsocket.cpp
+#         # src/gsocket_x.cpp
+#         # src/gthread_x.cpp
+#         # src/gtok.cpp
+#         # src/gutil.cpp
+#         # src/gthread.cpp
+#     )
+#     list(REMOVE_ITEM SAMPLES
+#         # samples/ex-mbox.cpp
+#         # samples/ex-socket.cpp
+#         # samples/ex-thread.c
+#         # samples/ex-thread_x.cpp
+#         # samples/ex-tok.cpp
+#     )
+# endif()
 
 
 #--- Build opengcl library
@@ -96,7 +92,7 @@ add_library(opengcl SHARED ${SRC})
 if(WIN32)
     target_link_libraries(opengcl wsock32 ws2_32)
 else()
-    target_link_libraries(pthread)
+    # target_link_libraries(pthread)
 endif()
 
 # target_compile_definitions(opengcl PUBLIC ${COMPILE_DEFINITIONS})
