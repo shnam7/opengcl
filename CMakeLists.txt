@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10.2)
 
 project(opengcl VERSION 1.0.0)
+set (EXCLUDE_DIR __trash)
 
 #--- Compiler options
 # set (CMAKE_CXX_STANDARD 11)
