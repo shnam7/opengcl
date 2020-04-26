@@ -1,9 +1,11 @@
 #include "gthread.h"
 #include "gsem.h"
 
-#if !defined(_WIN32)    // unix port
+#if defined(_WIN32)
+#include <windows.h>
+#else
+#define ERROR_INVALID_HANDLE    EINVAL
 #include <errno.h>
-#define ERROR_INVALID_HANDLE	EINVAL
 #endif
 
 //--------------------------------------------------------------------
@@ -12,7 +14,7 @@
 
 struct __start_param {
 	gcl::gthread		*pThread;
-	gcl::runnable		*runnable;
+	gcl::_runnable		*runnable;
 	gthread_func_t	    pFunc;
 	void			    *data;
 	gsem_t			    *sem;			/* parent --> thread */
@@ -58,10 +60,10 @@ gcl::gthread::gthread() : m_t(GTHREAD_NULL) { _check_init(); }
 
 gcl::gthread::~gthread() { stop(); }
 
-gcl_api int gcl::gthread::start(gcl::runnable *runnable)
+gcl_api int gcl::gthread::start(runnable *runnable)
 {
 	__start_param pa = { this, runnable, 0, 0, 0, 0 };
-	return __start( &pa );
+	return __start(&pa);
 }
 
 gcl_api int gcl::gthread::start(gthread_func_t func, void *data)
@@ -72,9 +74,8 @@ gcl_api int gcl::gthread::start(gthread_func_t func, void *data)
 
 gcl_api int gcl::gthread::join(void **thread_return) const
 {
-	if (m_t==GTHREAD_NULL || gthread_self()==m_t )
-		return ERROR_INVALID_HANDLE;
-	return gthread_join( m_t, thread_return );
+    if (m_t == GTHREAD_NULL || gthread_self() == m_t) return ERROR_INVALID_HANDLE;
+    return gthread_join(m_t, thread_return);
 }
 
 gcl_api int gcl::gthread::stop()
@@ -88,22 +89,20 @@ gcl_api int gcl::gthread::stop()
 
 gcl_api int gcl::gthread::__start(void *pa)
 {
-	if ( m_t != GTHREAD_NULL || gthread_self()==m_t )
-		return ERROR_INVALID_HANDLE;
+    if (m_t != GTHREAD_NULL || gthread_self() == m_t) return ERROR_INVALID_HANDLE;
 
-	int r = _check_init();
-	if ( r != 0 ) return r;
+    int r = _check_init();
+    if (r != 0) return r;
 
-	/* create temporary semaphore */
-	gsem_t sem, sem_th;
-	r = gsem_init(&sem, 0, 0);
-	if ( r != 0 ) return r;
-	r = gsem_init(&sem_th, 0, 0);
-	if ( r != 0 )
-	{
-		gsem_destroy( &sem );
-		_check_cleanup();
-		return r;
+    /* create temporary semaphore */
+    gsem_t sem, sem_th;
+    r = gsem_init(&sem, 0, 0);
+    if (r != 0) return r;
+    r = gsem_init(&sem_th, 0, 0);
+    if (r != 0) {
+        gsem_destroy(&sem);
+        _check_cleanup();
+        return r;
 	}
 
 	((__start_param *)pa)->sem = &sem;

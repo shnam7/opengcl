@@ -11,9 +11,18 @@
 #include <memory.h>
 #include <stdio.h>
 
+typedef struct _vdata {
+    unsigned dataSize;
+    char buf[16];
+} vdata;
+
+using IQue = gcl::queue<int>;
+using VQue = gcl::queue<vdata>;
+
+
 void gque_test()
 {
-    gcl::queue<int> gq(10);
+    IQue gq(10);
 
     printf("GQue: capacity=%d entries=%d rooms=%d\n",
            gq.capacity(), gq.length(), gq.available());
@@ -55,15 +64,11 @@ void gque_test()
     }
 }
 
-typedef struct _vdata {
-    unsigned dataSize;
-    char buf[16];
-} vdata;
 
 void gque_running_test()
 {
+    VQue gq(30);
     vdata val;
-    gcl::queue<vdata> gq(30);
 
     int loopCount = 30;
     while (loopCount-- > 0) {

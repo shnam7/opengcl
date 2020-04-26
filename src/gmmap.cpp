@@ -133,7 +133,7 @@ gcl_api char *gcl::gmmap::_mmap(int filedes, off_t offset, size_t size,
 //--------------------------------------------------------------------
 //	class gcl::mmapfile
 //--------------------------------------------------------------------
-gcl_api void gcl::mmapfile::close()
+gcl_api void gcl::gmmap_file::close()
 {
 	gcl::gmmap::close();
 	if ( m_fd != -1 )
@@ -147,12 +147,12 @@ gcl_api void gcl::mmapfile::close()
 	}
 }
 
-gcl_api size_t gcl::mmapfile::getFileLength() const
+gcl_api size_t gcl::gmmap_file::getFileLength() const
 {
 	return m_fd==-1 ? 0 : _filelength( m_fd );
 }
 
-gcl_api char *gcl::mmapfile::_mmap(const char *filePathName, off_t offset, size_t size,
+gcl_api char *gcl::gmmap_file::_mmap(const char *filePathName, off_t offset, size_t size,
 		bool bReadOnly, const char *name)
 {
 	if ( isValid() ) close();

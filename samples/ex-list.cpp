@@ -1,22 +1,21 @@
-#include "glist.h"
+#include "gcl.h"
 #include <stdio.h>
 
-using gcl::list;
-
-struct Item : public list<>::node {
+struct Item : public gcl::list<>::node {
     char msg[16];
 };
+using ItemList =gcl::list<Item>;
 
 
 int main() {
-    list<Item> gl;
+    ItemList itemList;
 
     Item *pRemove = 0;
 
     for (int i=0; i<10; i++) {
         Item *item = new Item();
         sprintf(item->msg, "Couunt=%d", i);
-        gl.append(item);
+        itemList.append(item);
 
         if (i==5) pRemove = item;
 
@@ -24,13 +23,13 @@ int main() {
     }
 
     printf("Removing item #5\n");
-    gl.remove(pRemove);
+    itemList.remove(pRemove);
 
     int count = 0;
-    Item *item = gl.first();
+    Item *item = itemList.first();
     while (item) {
         printf("entry #%i: %s\n", count++, item->msg);
-        item = gl.nextOf(item);
+        item = itemList.nextOf(item);
     }
 
 }

@@ -93,13 +93,13 @@ protected:
 //--------------------------------------------------------------------
 //	class GMMapFile
 //--------------------------------------------------------------------
-class gcl_api mmapfile : public gmmap {
+class gcl_api gmmap_file : public gmmap {
 protected:
 	int			m_fd = -1;  // file descriptor
 
 public:
-	mmapfile() {}
-	~mmapfile() { close(); }
+	gmmap_file() {}
+	~gmmap_file() { close(); }
 
 	//--- manipulators
 	// read only mappings
@@ -134,3 +134,7 @@ protected:
 };
 
 } // namespace gcl
+
+
+typedef gcl::gmmap          GMMap;
+typedef gcl::gmmap_file     GMMapFile;

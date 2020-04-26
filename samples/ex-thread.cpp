@@ -12,20 +12,20 @@
 
 
 #include "gthread.h"
-#include "gtime.h"
+#include "gtimer.h"
 #include <stdio.h>
 
 void *foo(void *data)
 {
 	int val = (int)(uintptr_t)data;
 	printf( "Starting: arg=%d\n", val );
-    gcl::nanotick_t elapsed = 0;
+    nanotick_t elapsed = 0;
     for (int i=0; i<10; i++) {
-        gcl::nanotick_t tm = gcl::chrono::nanoTicks();
-        gcl::sleep(300);
-        // gcl::nanosleep(500000000);
-        elapsed = gcl::chrono::nanoElapsed(tm);
-		printf( "tid=%d count=%i nanotick=%lu elapsed=%lu\n", val, i, tm, elapsed);
+        nanotick_t tm = GTimer::nanoTicks();
+        gsleep(300);
+        // gnanosleep(500000000);
+        elapsed = GTimer::nanoElapsed(tm);
+		printf( "tid=%d count=%i nanotick=%llu elapsed=%llu\n", val, i, tm, elapsed);
     }
 	return 0;
 }

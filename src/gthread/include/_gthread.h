@@ -25,8 +25,6 @@ typedef void                        *(*gthread_func_t)(void *data);
 /*--------------------------------------------------------------------
  * WIN32 port
  *--------------------------------------------------------------------*/
-#include "_gthread_tcb.h"
-
 #define GTHREAD_CANCELED			((void *) -1)
 #define GTHREAD_INVALID_KEY			((gthread_key_t)(-1))
 // #define GTHREAD_INVALID_KEY			((gthread_key_t)TLS_OUT_OF_INDEXES)

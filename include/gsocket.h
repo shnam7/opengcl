@@ -241,22 +241,22 @@ namespace gcl {
 //--------------------------------------------------------------------
 //	class GSocket
 //--------------------------------------------------------------------
-class gcl_api socket {
+class gcl_api gsocket {
 protected:
 	socket_t		m_sock;
 
 private:
-	socket(const socket& gsock);		// copy constructor is not allowed.
-	socket operator=(socket_t sock);	// assignment is not allowed
+	gsocket(const gsocket& gsock);		// copy constructor is not allowed.
+	gsocket operator=(socket_t sock);	// assignment is not allowed
 
 public:
 	enum { DEF_BACKLOG=5 };
 
 public:
 	//--- creators
-	socket() : m_sock(-1) {}
-	socket(socket_t sock) : m_sock(sock) {}
-	~socket() { closeSocket(); }
+	gsocket() : m_sock(-1) {}
+	gsocket(socket_t sock) : m_sock(sock) {}
+	~gsocket() { closeSocket(); }
 
 	//--- manipulations
 	bool createSocket(int type, unsigned long nbio);
@@ -354,3 +354,6 @@ public:
 };
 
 } // namespace gcl
+
+
+typedef gcl::gsocket    GSocket;

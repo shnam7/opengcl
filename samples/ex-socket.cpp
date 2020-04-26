@@ -21,8 +21,9 @@
 
 static void *_serv_d(void *data)
 {
-	gcl::gthread *pT = gcl::gthread::getCurrent();
-	gcl::socket gs( *(socket_t *)data );
+	GThread *pT = GThread::getCurrent();
+	GSocket gs( *(socket_t *)data );
+
 	if ( !gs.isValid() ) { delete pT; return 0; }
 	gs.setNBIO( true );
 
@@ -51,8 +52,9 @@ static void *_serv_d(void *data)
 
 void _server()
 {
+	GSocket gsListener;
+
 	printf( "Starting server...\n" );
-	gcl::socket gsListener;
 	int r = gsListener.createSocket( true );
 	if ( !r )
 	{
@@ -78,7 +80,7 @@ void _server()
 		if ( sock == INVALID_SOCKET ) continue;
 		printf( "client from %s accepted.\n", inet_ntoa(sa.sin_addr) );
 
-		gcl::gthread *pT = new gcl::gthread;
+		GThread *pT = new GThread();
 		pT->start( _serv_d, (void *)&sock );
 /*		pid_t pid = fork();
 		if ( pid == 0 )	// child process
@@ -113,10 +115,11 @@ void _server()
 
 void _client()
 {
+	GSocket gs;
+
 	printf( "Starting client...\n" );
 
 	//--- create socket
-	gcl::socket gs;
 	gs.createSocket( true );
 	//gs.connect( inet_addr("127.0.0.1"), EX_PORT );
 	// gs.connect( "127.0.0.1", EX_PORT );

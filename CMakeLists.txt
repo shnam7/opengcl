@@ -20,7 +20,7 @@ include_directories(include src/gthread/include)
 
 #--- source files
 set (SRC_COMMON
-    src/gtime.cpp
+    src/gtimer.cpp
     src/gque.cpp
     src/glist.cpp
 	src/gmmap.cpp
@@ -46,13 +46,13 @@ set(SRC_GTHREAD
 
 # samples source
 set(SAMPLES
-	samples/ex-time.cpp
+	samples/ex-timer.cpp
     samples/ex-list.cpp
 	samples/ex-que.cpp
 	samples/ex-mmap.cpp
 	samples/ex-tok.cpp
+	samples/ex-sem.cpp
 	samples/ex-thread.cpp
-	samples/ex-thread_x.cpp
 	samples/ex-mbox.cpp
 	samples/ex-socket.cpp
 )

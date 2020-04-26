@@ -42,12 +42,12 @@ public:
 //-----------------------------------------------------------------------------
 //	class msgbox - thread safe message box core
 //-----------------------------------------------------------------------------
-template <class T>
-class msgbox : public gmbox {
+template <class T = void>
+class mbox : public gmbox {
 public:
-	msgbox() {};
-	msgbox(unsigned capacity, bool uselock=true) : gmbox(capacity, sizeof(T), uselock) {}
-	~msgbox() {}
+	mbox() {};
+	mbox(unsigned capacity, bool uselock=true) : gmbox(capacity, sizeof(T), uselock) {}
+	~mbox() {}
 
     void reset(unsigned capacity) { gmbox::reset(capacity, sizeof(T)); }
 
@@ -58,3 +58,6 @@ public:
 };
 
 } // namespace gcl
+
+
+typedef gcl::gmbox      GMbox;

@@ -3,25 +3,26 @@
  */
 
 #include "gmbox.h"
-#include "gtime.h"
+#include "gtimer.h"
 #include "gthread.h"
 #include <stdio.h>
 #include <string.h>
 
 typedef struct { char msg[128]; } msg_t;
-typedef gcl::msgbox<msg_t> msgbox;
+using MsgBox = gcl::mbox<msg_t>;
 
 void *foo_put(void *data)
 {
     unsigned tid = ((unsigned)(gcl::gthread::getCurrent()->threadID()) % 100);
-    msgbox *mb = (msgbox *)data;
+    MsgBox &mbox = *(MsgBox *)data;
+
     int count = 0;
 	for (;;)
 	{
 		msg_t msg;
 		sprintf( msg.msg, "id=%d count=%d", tid, count++ );
-		if ( mb->put(msg) ) {
-            printf( "putter:%s qsize=%d\n", msg.msg, mb->length() );
+		if ( mbox.put(msg) ) {
+            printf( "putter:%s qsize=%d\n", msg.msg, mbox.length() );
         }
 		gcl::sleep(0);
 	}
@@ -31,14 +32,15 @@ void *foo_put(void *data)
 void *foo_get(void *data)
 {
     unsigned tid = ((unsigned)(gcl::gthread::getCurrent()->threadID()) % 100);
-    msgbox *mb = (msgbox *)data;
+    MsgBox &mbox = *(MsgBox *)data;
+
     int count = 0;
 	for (;;)
 	{
 		msg_t msg;
 		sprintf( msg.msg, "putter id=%d count=%d", tid, count++ );
-		if ( mb->get(&msg) ) {
-            printf( "getter:%s qsize=%d\n", msg.msg, mb->length() );
+		if ( mbox.get(&msg) ) {
+            printf( "getter:%s qsize=%d\n", msg.msg, mbox.length() );
         }
 		gcl::sleep(0);
 	}
@@ -47,7 +49,7 @@ void *foo_get(void *data)
 
 int main()
 {
-    msgbox mbox(100);
+    MsgBox mbox(100);
 
 	const int MAX_THREAD = 10;
 	gcl::gthread getters[MAX_THREAD];

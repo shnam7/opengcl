@@ -30,12 +30,12 @@ inline void nanosleep(u64_t nsec) { gthread_nanosleep(nsec); }
 
 
 //--- runnable
-class gcl_api runnable {
+class gcl_api _runnable {
     friend class gthread;
 
 protected:
-    runnable() {}
-    virtual ~runnable() {}
+    _runnable() {}
+    virtual ~_runnable() {}
     virtual void *run() { return (void *)0; }
 
     // NOTE: these functions applies for gthread_self()
@@ -45,9 +45,9 @@ protected:
 
 
 //--- thread
-class gcl_api gthread : public runnable {
+class gcl_api gthread : public _runnable {
 public:
-    typedef runnable runnable;  // make gthread::runnable
+    typedef _runnable runnable;  // make gthread::runnable
 
 protected:
     gthread_t       m_t;
@@ -63,9 +63,9 @@ public:
     ~gthread();
 
     //--- manipulators
-    int start() { return start(this); }
+    int start(gthread_attr_t *attr=0) { return start(this); }
     int start(runnable *runnable);
-    int start(gthread_func_t func, void *data = 0);
+    int start(gthread_func_t func, void *data=0);
 
     int join(void **thread_return = 0) const;
     int stop();
@@ -73,7 +73,7 @@ public:
 
     //--- accessors
     bool isRunning() const { return m_t != GTHREAD_NULL; }
-    uintptr_t threadID() const { return (uintptr_t)m_t; }
+    u32_t threadID() const { return (u32_t)m_t; }
     gthread_t threadHandle() const { return m_t; }
 
     // Returns OS dependent handle.
@@ -109,13 +109,13 @@ public:
 
 
 //--- cond
-class cond {
+class gcond {
 protected:
 	gthread_cond_t		m_cond;
 
 public:
-	cond() { gthread_cond_init(&m_cond, 0); }
-	~cond() { gthread_cond_destroy(&m_cond); }
+	gcond() { gthread_cond_init(&m_cond, 0); }
+	~gcond() { gthread_cond_destroy(&m_cond); }
 
 	bool signal() { return gthread_cond_signal(&m_cond)==0; }
 	bool broadcast() { return gthread_cond_broadcast(&m_cond)==0; }
@@ -130,13 +130,13 @@ public:
 
 
 //--- rwlock
-class rwlock {
+class grwlock {
 protected:
 	gthread_rwlock_t		m_rwlock;
 
 public:
-	rwlock() { gthread_rwlock_init(&m_rwlock, 0); }
-	~rwlock() { gthread_rwlock_destroy(&m_rwlock); }
+	grwlock() { gthread_rwlock_init(&m_rwlock, 0); }
+	~grwlock() { gthread_rwlock_destroy(&m_rwlock); }
 
 	int rdlock() { return gthread_rwlock_rdlock(&m_rwlock); }
 	int tryrdlock() { return gthread_rwlock_tryrdlock(&m_rwlock); }
@@ -146,3 +146,13 @@ public:
 };
 
 } // namespace gcl
+
+
+typedef gcl::gthread::runnable      GRunnable;
+typedef gcl::gthread                GThread;
+typedef gcl::gmutex                 GMutex;
+typedef gcl::gcond                  GCondition;
+typedef gcl::grwlock                GRWLock;
+
+constexpr auto gsleep = gcl::sleep;
+constexpr auto gnanosleep = gcl::nanosleep;

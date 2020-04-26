@@ -14,15 +14,16 @@
  *		  unless specified otherwise.
  */
 
-#include "gthread.h"
+#include "_gthread.h"
 #include "gsem.h"
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <errno.h>
 #include <process.h>
-#include <stdlib.h>
-#include <windows.h>
+#include "_gthread_tcb.h"
+
 
 /*
 	TLS_MINIMUM_AVAIABLE per process is:
@@ -36,6 +37,7 @@ struct _key_entry {
     int             used;
     void            (*destr)(void *);
 };
+
 
 typedef struct {
     gthread_func_t  func;

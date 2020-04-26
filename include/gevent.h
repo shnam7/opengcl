@@ -44,7 +44,7 @@ protected:
 
 protected:
     char                            m_eventName[MAX_EVENT_NAME_LENGTH+1];
-    gcl::msgbox<event_listener_t>      m_evQ;
+    gcl::mbox<event_listener_t>      m_evQ;
     friend class GEventEmitter;
 
 public:

@@ -1,6 +1,4 @@
 #pragma once
-#include <stdint.h>
-#include <windows.h>
 #include "_list.h"
 
 typedef struct {

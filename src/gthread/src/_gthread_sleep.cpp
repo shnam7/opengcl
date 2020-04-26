@@ -14,18 +14,10 @@
 
 #if defined (_WIN32)
 #define _WIN32_WINNT 0x0400
+#include <stdint.h>
+#include <windows.h>
 #include "_gthread.h"
 #include "_gthread_tcb.h"
-// #include "synchapi.h"
-
-extern HANDLE hTimer;
-// void timerFunc(LPVOID lpArgToCompletionRoutine, DWORD dwTimerLowValue, DWORD dwTimerHighValue)
-// {
-//     __gthread_tcb *tcb = (__gthread_tcb *)lpArgToCompletionRoutine;
-//     // dmsg("timeFunc called\n");
-//     SetEvent(tcb->h_cancel);
-//     // WaitForSingleObjectEx(tcb->h_cancel, INFINITE, TRUE);
-// }
 
 
 extern gthread_key_t        _gkey_self;
@@ -42,38 +34,6 @@ gcl_api void gthread_sleep(u32_t msec)
 //-- nano wait is not supported yet
 gcl_api void gthread_nanosleep(u64_t nsec) {
     return gthread_sleep((u32_t)(nsec/ 1000000));
-
-//     gthread_sleep( (unsigned)(nsec/1000000));
-
-// //     __gthread_tcb *tcb = (__gthread_tcb *)TlsGetValue(_gkey_self);
-// // 	if ( !tcb ) { Sleep((unsigned)(nsec / 1000000)); return; }
-
-// //     LARGE_INTEGER liDueTime;
-// //     i64_t qwDueTime = -5 * nsec;
-// //     liDueTime.LowPart  = (DWORD) ( qwDueTime & 0xFFFFFFFF );
-// //     liDueTime.HighPart = (LONG)  ( qwDueTime >> 32 );
-
-// //     // bool bSuccess = SetWaitableTimer(
-// //     //        hTimer,                 // Handle to the timer object.
-// //     //        &liDueTime,             // When timer will become signaled.
-// //     //        2000,                   // Periodic timer interval of 2 seconds.
-// //     //        timerFunc,           // Completion routine.
-// //     //        tcb,                // Argument to the completion routine.
-// //     //        FALSE );                // Do not restore a suspended system.
-
-// //     // // wait forever
-// //     // SleepEx(
-// //     //     INFINITE,           // Wait forever.
-// //     //     TRUE );             // IMPORTANT!!! The thread must be in an
-// //     //                                // alertable state to process the APC.
-
-// //     if (!SetWaitableTimer(hTimer, &liDueTime, 0, timerFunc, tcb, FALSE)) {
-// //         CloseHandle(hTimer);
-// //         return;
-// //     };
-
-// //     // WaitForSingleObjectEx(hTimer, INFINITE, TRUE);
-// //     WaitForSingleObjectEx(tcb->h_cancel, INFINITE, FALSE);
 }
 
 #else
@@ -89,3 +49,49 @@ void gthread_sleep(u32_t msec) {
 }
 
 #endif
+
+
+// void timerFunc(LPVOID lpArgToCompletionRoutine, DWORD dwTimerLowValue, DWORD dwTimerHighValue)
+// {
+//     __gthread_tcb *tcb = (__gthread_tcb *)lpArgToCompletionRoutine;
+//     // dmsg("timeFunc called\n");
+//     SetEvent(tcb->h_cancel);
+//     // WaitForSingleObjectEx(tcb->h_cancel, INFINITE, TRUE);
+// }
+
+//-- nano wait is not supported yet
+// gcl_api void gthread_nanosleep(u64_t nsec) {
+//     return gthread_sleep((u32_t)(nsec/ 1000000));
+
+//     gthread_sleep( (unsigned)(nsec/1000000));
+
+//     __gthread_tcb *tcb = (__gthread_tcb *)TlsGetValue(_gkey_self);
+// 	if ( !tcb ) { Sleep((unsigned)(nsec / 1000000)); return; }
+
+//     LARGE_INTEGER liDueTime;
+//     i64_t qwDueTime = -5 * nsec;
+//     liDueTime.LowPart  = (DWORD) ( qwDueTime & 0xFFFFFFFF );
+//     liDueTime.HighPart = (LONG)  ( qwDueTime >> 32 );
+
+//     // bool bSuccess = SetWaitableTimer(
+//     //        hTimer,                 // Handle to the timer object.
+//     //        &liDueTime,             // When timer will become signaled.
+//     //        2000,                   // Periodic timer interval of 2 seconds.
+//     //        timerFunc,           // Completion routine.
+//     //        tcb,                // Argument to the completion routine.
+//     //        FALSE );                // Do not restore a suspended system.
+
+//     // // wait forever
+//     // SleepEx(
+//     //     INFINITE,           // Wait forever.
+//     //     TRUE );             // IMPORTANT!!! The thread must be in an
+//     //                                // alertable state to process the APC.
+
+//     if (!SetWaitableTimer(hTimer, &liDueTime, 0, timerFunc, tcb, FALSE)) {
+//         CloseHandle(hTimer);
+//         return;
+//     };
+
+//     // WaitForSingleObjectEx(hTimer, INFINITE, TRUE);
+//     WaitForSingleObjectEx(tcb->h_cancel, INFINITE, FALSE);
+// }

@@ -80,4 +80,6 @@ public:
 	T *end() const { return (T *)gque::end(); }
 };
 
-}
+} // namespace gcl
+
+typedef gcl::gque       GQue;

@@ -6,8 +6,8 @@
  */
 
 #include "gsocket.h"
+#include "gtimer.h"
 #include <string.h>
-#include "gtime.h"
 
 #if !defined(_WIN32)
 #include <errno.h>
@@ -112,7 +112,7 @@ int gsock_read(socket_t sock, char *buf, int n, unsigned long timeout)
 	}
 	if ( count == n || timeout==0 ) return count;
 
-	gcl::tick_t tm1 = gcl::chrono::ticks();
+	tick_t tm1 = GTimer::ticks();
 	for ( ;; )
 	{
 		int rc = recv( sock, buf+count, n-count, 0 );
@@ -123,7 +123,7 @@ int gsock_read(socket_t sock, char *buf, int n, unsigned long timeout)
 			if ( __err != EAGAIN ) return -1;
 		}
 		if ( count >= n ) break;
-		gcl::tick_t tmElapsed = gcl::chrono::elapsed( tm1 );
+		tick_t tmElapsed = GTimer::elapsed( tm1 );
 		if ( tmElapsed > timeout ) break;
 		if ( !gsock_is_readable(sock, timeout-tmElapsed) ) break;
 	}
@@ -133,7 +133,7 @@ int gsock_read(socket_t sock, char *buf, int n, unsigned long timeout)
 int gsock_write(socket_t sock, const char *buf, int n, unsigned long timeout)
 {
 	int count;
-	gcl::tick_t tm1, tmElapsed;
+	tick_t tm1, tmElapsed;
 
 	count = send( sock, buf, n, MSG_DONTWAIT );
 	if ( count == -1 )
@@ -142,7 +142,7 @@ int gsock_write(socket_t sock, const char *buf, int n, unsigned long timeout)
 		count = 0;
 	}
 	if ( count == n || timeout==0 ) return count;
-	tm1 = gcl::chrono::ticks();
+	tm1 = GTimer::ticks();
 	for ( ;; )
 	{
 		int wc = send( sock, buf+count, n-count, MSG_DONTWAIT );
@@ -153,7 +153,7 @@ int gsock_write(socket_t sock, const char *buf, int n, unsigned long timeout)
 			if ( __err != EAGAIN ) return -1;
 		}
 		if ( count >= n ) break;
-		tmElapsed = gcl::chrono::elapsed(tm1);
+		tmElapsed = GTimer::elapsed(tm1);
 		if ( tmElapsed > timeout ) break;
 		if ( !gsock_is_writable(sock, timeout-tmElapsed) ) break;
 	}
@@ -251,7 +251,7 @@ ipaddr_t gsock_hostaddr(const char *hostname)
 //--------------------------------------------------------------------
 //	class gcl::socket
 //--------------------------------------------------------------------
-bool gcl::socket::createSocket(int type, unsigned long nbio)
+bool gcl::gsocket::createSocket(int type, unsigned long nbio)
 {
     if (m_sock != (socket_t)-1) close(m_sock);
     m_sock = ::socket(AF_INET, type, 0);
@@ -259,7 +259,7 @@ bool gcl::socket::createSocket(int type, unsigned long nbio)
     return (nbio) ? ioctl(m_sock, FIONBIO, &nbio) == 0 : true;
 }
 
-bool gcl::socket::closeSocket()
+bool gcl::gsocket::closeSocket()
 {
 	if ( m_sock == (socket_t)-1 ) return false;
 	if ( close(m_sock) != 0 ) return false;
@@ -267,7 +267,7 @@ bool gcl::socket::closeSocket()
 	return true;
 }
 
-bool gcl::socket::attach(socket_t sock)
+bool gcl::gsocket::attach(socket_t sock)
 {
 	if ( sock == (socket_t)-1 ) return false;
 	if ( m_sock == sock ) return true;
@@ -276,7 +276,7 @@ bool gcl::socket::attach(socket_t sock)
 	return true;
 }
 
-bool gcl::socket::detach()
+bool gcl::gsocket::detach()
 {
 	m_sock = -1;
 	return true;

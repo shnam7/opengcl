@@ -32,3 +32,6 @@ gcl_api void hexstr2byte(const char *src, char *dst, int n);
 } // namespace util
 
 } // namespace gcl
+
+
+namespace GUtil = gcl::util;
