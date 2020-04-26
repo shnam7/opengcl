@@ -5,13 +5,12 @@
  */
 
 #pragma once
-
 #include "gmbox.h"
 #include "glist.h"
 
 #define MAX_EVENT_NAME_LENGTH  15
 
-class GEvent {
+class gcl_api GEvent {
 protected:
     const char      *m_eventName;
     const void      *m_data;;
@@ -33,7 +32,7 @@ public:
 //-----------------------------------------------------------------------------
 //  class GEventQ
 //-----------------------------------------------------------------------------
-class GEventQ : public gcl::list<GEventQ>::node {
+class gcl_api GEventQ : public gcl::list<GEventQ>::node {
 protected:
     typedef struct {
         GEvent::Handler     handler;        // event handler
@@ -44,7 +43,7 @@ protected:
 
 protected:
     char                            m_eventName[MAX_EVENT_NAME_LENGTH+1];
-    gcl::mbox<event_listener_t>      m_evQ;
+    gcl::mbox<event_listener_t>     m_evQ;
     friend class GEventEmitter;
 
 public:
@@ -64,7 +63,7 @@ public:
 //-----------------------------------------------------------------------------
 //  class GEventEmitter
 //-----------------------------------------------------------------------------
-class GEventEmitter {
+class gcl_api GEventEmitter {
 protected:
     gcl::list<GEventQ>      m_eqList;      // event queue list
 

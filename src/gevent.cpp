@@ -7,24 +7,24 @@
  */
 
 #include "gevent.h"
-#include "GUtil.h"
+#include "gutil.h"
 #include <string.h>
 
 //-----------------------------------------------------------------------------
 //  class GEventQ
 //-----------------------------------------------------------------------------
-GEventQ::GEventQ(const char *eventName, unsigned eventQSize) {
+gcl_api GEventQ::GEventQ(const char *eventName, unsigned eventQSize) {
     strncpy(m_eventName, eventName, MAX_EVENT_NAME_LENGTH);
     m_eventName[MAX_EVENT_NAME_LENGTH] = 0;
     m_evQ.reset(eventQSize);
 }
 
-bool GEventQ::addListener(GEvent::Handler handler, void *data, unsigned extraData, bool once) {
+gcl_api bool GEventQ::addListener(GEvent::Handler handler, void *data, unsigned extraData, bool once) {
     event_listener_t entry = { handler, data, extraData, once };
     return m_evQ.put(&entry);
 }
 
-void GEventQ::removeListener(GEvent::Handler handler) {
+gcl_api void GEventQ::removeListener(GEvent::Handler handler) {
     unsigned len = m_evQ.length();
     for (unsigned i=0; i<len; i++) {
         event_listener_t evObj;
@@ -34,7 +34,7 @@ void GEventQ::removeListener(GEvent::Handler handler) {
     }
 }
 
-void GEventQ::processEvents() {
+gcl_api void GEventQ::processEvents() {
     event_listener_t evObj;
     unsigned len = m_evQ.length();
     for (unsigned i=0; i<len; i++) {
@@ -49,7 +49,7 @@ void GEventQ::processEvents() {
 //-----------------------------------------------------------------------------
 //  class GEventEmitter
 //-----------------------------------------------------------------------------
-void GEventEmitter::_on(const char *eventName, GEvent::Handler handler,
+gcl_api void GEventEmitter::_on(const char *eventName, GEvent::Handler handler,
                         void *data, unsigned extraData, bool once)
 {
     GEventQ *eQ = _findEventQ(eventName);
@@ -61,19 +61,19 @@ void GEventEmitter::_on(const char *eventName, GEvent::Handler handler,
     eQ->addListener(handler, data, extraData, once);
 }
 
-void GEventEmitter::off(const char *eventName, GEvent::Handler handler)
+gcl_api void GEventEmitter::off(const char *eventName, GEvent::Handler handler)
 {
     GEventQ *evQ = _findEventQ(eventName);
     if (evQ) evQ->removeListener(handler);
 }
 
-void GEventEmitter::emit(const char *eventName) {
+gcl_api void GEventEmitter::emit(const char *eventName) {
     GEventQ *evQ = (GEventQ *)_findEventQ(eventName);
     if (evQ) evQ->processEvents();
 }
 
 
-GEventQ *GEventEmitter::_findEventQ(const char *eventName) {
+gcl_api GEventQ *GEventEmitter::_findEventQ(const char *eventName) {
     GEventQ *evQ = m_eqList.first();
     while (evQ) {
         if (strcmp(evQ->eventName(), eventName) == 0) return evQ;

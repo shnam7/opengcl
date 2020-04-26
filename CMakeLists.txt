@@ -54,6 +54,7 @@ set(SAMPLES
 	samples/ex-sem.cpp
 	samples/ex-thread.cpp
 	samples/ex-mbox.cpp
+	samples/ex-event.cpp
 	samples/ex-socket.cpp
 )
 

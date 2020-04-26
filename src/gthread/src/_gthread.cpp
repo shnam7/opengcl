@@ -277,7 +277,7 @@ gcl_api void gthread_exit(void *retval)
     }
     else {
         /* main thread does not explicitly call _endthread */
-        _endthreadex((uintptr_t)retval);
+        _endthreadex((unsigned)(uintptr_t)retval);
     }
 }
 

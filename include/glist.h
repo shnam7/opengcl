@@ -14,7 +14,7 @@ namespace gcl {
 //-----------------------------------------------------------------------------
 // doublely linked list
 //-----------------------------------------------------------------------------
-class _node {
+class gcl_api _node {
 protected:
     _node       *m_prev = this;
     _node       *m_next = this;
@@ -33,7 +33,7 @@ public:
     unsigned length();  // count the length of the list it's atached
 };
 
-class glist {
+class gcl_api glist {
 public:
     typedef _node   node;
 
@@ -62,7 +62,7 @@ public:
 
 
 template <class T = void>
-class list : public glist {
+class gcl_api list : public glist {
 public:
     typedef _node   node;
 

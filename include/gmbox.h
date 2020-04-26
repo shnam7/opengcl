@@ -24,7 +24,7 @@ public:
 	~gmbox() {}
 
 	void reset(unsigned capacity, unsigned msgSize)
-        { lock(); m_q.reset(msgSize, capacity); unlock(); }
+        { lock(); m_q.reset(capacity, msgSize); unlock(); }
 	void *peek() { return m_q.peek(); }
 	bool put(const void *msg)
         { lock(); bool r = m_q.put(msg); unlock(); return r; }
@@ -43,7 +43,7 @@ public:
 //	class msgbox - thread safe message box core
 //-----------------------------------------------------------------------------
 template <class T = void>
-class mbox : public gmbox {
+class gcl_api mbox : public gmbox {
 public:
 	mbox() {};
 	mbox(unsigned capacity, bool uselock=true) : gmbox(capacity, sizeof(T), uselock) {}
