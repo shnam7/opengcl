@@ -263,7 +263,7 @@ gcl_api void gthread_exit(void *retval)
             list_for_each_safe(pos, tmp, &_tcb->join_list)
             {
                 __gthread_tcb *_ent = list_entry(pos, __gthread_tcb, join_node);
-                _ent->join_retval = (uintptr_t)retval;
+                _ent->join_retval = retval;
                 list_del_init(&_ent->join_node);
             }
         }
@@ -277,7 +277,7 @@ gcl_api void gthread_exit(void *retval)
     }
     else {
         /* main thread does not explicitly call _endthread */
-        _endthreadex((unsigned)(uintptr_t)retval);
+        _endthreadex((uintptr_t)retval);
     }
 }
 

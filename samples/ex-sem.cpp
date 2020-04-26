@@ -12,20 +12,21 @@
 #include "gcl.h"
 #include <stdio.h>
 
-GSemaphore sem;
+GSemaphore sem(2);
 
 void *foo(void *)
 {
     int val = 0;
 	GThread *pT = GThread::getCurrent();
+    int tid = pT->threadID() % 100;
 
-    printf("tid=%u started", pT->threadID());
+    printf("tid=%03u started\n", tid);
     sem.wait();
     sem.getValue(&val);
-    printf("tid=%u aquired sem. sem value=%d\n", pT->threadID(), val);
-    gsleep(500);
+    printf("tid=%03u aquired sem. sem value=%d\n", tid, val);
+    gsleep(1000);
     sem.post();
-	printf( "tid%u released sem\n", pT->threadID() );
+	printf( "tid%03u released sem\n", tid );
 	return (void *)12345;
 }
 
@@ -44,19 +45,19 @@ int main()
 
 	sem.wait();
 	sem.getValue(&val);
-    printf("main: acquired sem. sem val=%d.", val);
-    gsleep(500);
+    printf("main: acquired sem. sem val=%d.\n", val);
+    gsleep(1000);
 	printf( "main: sem released\n");
     sem.post();
 
     t1.join( &retval );
-	printf( "tid=%u finished. ret=%p\n", t1.threadID(), retval );
+	printf( "tid=%03u finished. ret=%p\n", t1.threadID(), retval );
 
 	t2.join( &retval );
-	printf( "tid=%u finished. ret=%p\n", t2.threadID(), retval );
+	printf( "tid=%03u finished. ret=%p\n", t2.threadID(), retval );
 
 	t3.join( &retval );
-    printf( "tid=%u finished. ret=%p\n", t3.threadID(), retval );
+    printf( "tid=%03u finished. ret=%p\n", t3.threadID(), retval );
 
 	sem.getValue(&val);
 	printf( "Finally, Sem value=%d\n", val );

@@ -7,5 +7,5 @@ typedef struct {
 	int				canceled;		/* cancel signal */
 	list_head		join_node;
 	list_head		join_list;
-	uintptr_t		join_retval;
+	void            *join_retval;
 } __gthread_tcb;

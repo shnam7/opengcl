@@ -75,7 +75,7 @@ protected:
 	gsem_t		m_sem;
 
 public:
-	gsem(unsigned int val=1) { gsem_init(&m_sem, 0, val); }
+	gsem(unsigned int val=0) { gsem_init(&m_sem, 0, val); }
 
 	~gsem() { gsem_destroy(&m_sem); }
 
