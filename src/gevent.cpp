@@ -19,7 +19,7 @@ gcl_api GEventQ::GEventQ(const char *eventName, unsigned eventQSize) {
     m_evQ.reset(eventQSize);
 }
 
-gcl_api bool GEventQ::addListener(GEvent::Handler handler, void *data, unsigned extraData, bool once) {
+gcl_api bool GEventQ::addListener(GEvent::Handler handler, void *data, unsigned long extraData, bool once) {
     event_listener_t entry = { handler, data, extraData, once };
     return m_evQ.put(&entry);
 }
@@ -50,11 +50,11 @@ gcl_api void GEventQ::processEvents() {
 //  class GEventEmitter
 //-----------------------------------------------------------------------------
 gcl_api void GEventEmitter::_on(const char *eventName, GEvent::Handler handler,
-                        void *data, unsigned extraData, bool once)
+                        void *data, unsigned long extraData, bool once)
 {
     GEventQ *eQ = _findEventQ(eventName);
     if (!eQ) {
-        eQ = new GEventQ(eventName);
+        eQ = new GEventQ(eventName, m_eqSize);
         if (!eQ) throw "GEventEmitter::_on:memory allocation failure.";
         m_eqList.append(eQ);
     }
