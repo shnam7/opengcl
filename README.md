@@ -1,20 +1,26 @@
-# OpenGCL - The Open Source Gereral Component Library
+# OpenGCL
+OpenGCL is an open source cross-platform general component library written in c++.
 
-Version 0.9.0.2
 
-## Introduction.
+## Available components
+- gthread: POSIX pthread complient multi-threadiing and C++ wrapper
+- gsem: POSIX complient semaphore
+- gsocket: socket API and C++ wrapper
+- gtimer: high resolution timer
+- gmmap: memory mapped file
+- glist: simple doubly linked list
+- gque: simple circular queue
+- gmbox: thread-safe gque (message box)
+- gevent: simple thread-safe event and event emitter
+- gtokenizer: simple string tokenizer
 
-The OpenGCL was designed to provide general object oriented component interfaces
-for various software models.
-
-## Release Notes.
 
 ## Supported Platforms
  - GNU/Linux
  - WIN32
  - Cygwin
+ - Mingw-64
 
-## Compiler Support
- - GNU compiler ( gcc version 2.96 or later )
- - Visual C++ 6.0
- - Visual Studio .Net 2003
+
+## Resource
+Refer to [samples](samples/) directory for brief usage.

@@ -16,8 +16,8 @@ typedef struct _vdata {
     char buf[16];
 } vdata;
 
-using IQue = gcl::queue<int>;
-using VQue = gcl::queue<vdata>;
+using IQue = gcl::que<int>;
+using VQue = gcl::que<vdata>;
 
 
 void gque_test()

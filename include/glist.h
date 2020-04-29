@@ -14,31 +14,29 @@ namespace gcl {
 //-----------------------------------------------------------------------------
 // doublely linked list
 //-----------------------------------------------------------------------------
-class gcl_api _node {
-protected:
-    _node       *m_prev = this;
-    _node       *m_next = this;
-    friend class glist;
-    template<class T> friend class list;
-
-public:
-    _node() {}
-    _node(_node *prev, _node *next) : m_prev(prev), m_next(next) {}
-    ~_node() { detach(); }
-
-    void append(_node *nod) { nod->m_next = m_next; nod->m_prev = this; m_next->m_prev = nod; m_next = nod; }
-    void prepend(_node *nod) { m_prev->append(nod); }
-    void detach() { m_prev->m_next = m_next; m_next->m_prev = m_prev; }
-    bool isDetached() { return m_next == this; }
-    unsigned length();  // count the length of the list it's atached
-};
-
 class gcl_api glist {
 public:
-    typedef _node   node;
+    class gcl_api node {
+    protected:
+        node       *m_prev = this;
+        node       *m_next = this;
+        friend class glist;
+        template<class T> friend class list;
+
+    public:
+        node() {}
+        node(node *prev, node *next) : m_prev(prev), m_next(next) {}
+        ~node() { detach(); }
+
+        void append(node *nod) { nod->m_next = m_next; nod->m_prev = this; m_next->m_prev = nod; m_next = nod; }
+        void prepend(node *nod) { m_prev->append(nod); }
+        void detach() { m_prev->m_next = m_next; m_next->m_prev = m_prev; }
+        bool isDetached() { return m_next == this; }
+        unsigned length();  // count the length of the list it's atached
+    };
 
 protected:
-    _node           m_head;
+    node           m_head;
 
 public:
     glist() {}
@@ -64,12 +62,6 @@ public:
 template <class T = void>
 class gcl_api list : public glist {
 public:
-    typedef _node   node;
-
-protected:
-    _node           m_head;
-
-public:
     list() {}
     ~list() {}
 
@@ -88,4 +80,4 @@ public:
 } // namespace gcl
 
 
-typedef gcl::glist     GList;
+using GList = gcl::glist;

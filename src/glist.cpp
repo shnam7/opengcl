@@ -7,10 +7,10 @@
 
 #include "glist.h"
 
-gcl_api unsigned gcl::_node::length()
+gcl_api unsigned gcl::glist::node::length()
 {
     unsigned count = 0;
-    _node *nod = m_next;
+    gcl::glist::node *nod = m_next;
     while (nod->m_next != m_next) {
         nod = nod->m_next;
         count++;

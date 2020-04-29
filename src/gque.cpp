@@ -6,18 +6,17 @@
  */
 
 #include "gque.h"
-// #include <stdlib.h>
 #include <memory.h>
 
 //--------------------------------------------------------------------
 //	class gcl::_gque_core
 //--------------------------------------------------------------------
 // set item size=1 to avoid division by zero
-static gcl::gque_t _empty_q = {
-    sizeof(gcl::gque_t),
-    sizeof(gcl::gque_t) + 1,
-    sizeof(gcl::gque_t),
-    sizeof(gcl::gque_t), 1};
+gcl::gque::gque_t gcl::gque::_empty_q = {
+    sizeof(gcl::gque::gque_t),
+    sizeof(gcl::gque::gque_t) + 1,
+    sizeof(gcl::gque::gque_t),
+    sizeof(gcl::gque::gque_t), 1};
 
 gcl_api gcl::gque::gque() : m_q(&_empty_q) {}
 

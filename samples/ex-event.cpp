@@ -8,14 +8,19 @@
 
 class Runner : public GThread::runnable, public GEventEmitter {
 public:
-    void *run() {
-        printf("emiting suspend\n");
-        emit("suspend");
+    void *run()
+    {
+        while (true) {
+            printf("emiting suspend\n");
+            emit("suspend");
+            gsleep(100);
+        }
         return 0;
     }
 };
 
-void eventHandler(GEvent& e) {
+void eventHandler(GEvent &e)
+{
     printf("suspend listener...called\n");
 }
 
@@ -26,7 +31,10 @@ int main()
     runner.on("suspend", eventHandler, &t1);
 
     t1.start(&runner);
+    gsleep(1000);
+    t1.cancel();
+
     t1.join();
-	printf( "END of main.\n" );
-	return 0;
+    printf("END of main.\n");
+    return 0;
 }
