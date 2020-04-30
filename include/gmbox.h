@@ -67,8 +67,8 @@ public:
 	bool put(const T *msg) { return gmbox::put(msg); }
 	bool put(const T &msg) { return gmbox::put(&msg); }
 	bool get(T *msg) { return gmbox::get(msg); }
-    bool push(const T *item) { return gmbox::push(msg); }
-	bool pop(void *item=0) { return gmbox::pop(msg); }
+    bool push(const T *item) { return gmbox::push(item); }
+	bool pop(void *item=0) { return gmbox::pop(item); }
 
 protected:
 	void reset(unsigned capacity, unsigned msgSize);    // disable

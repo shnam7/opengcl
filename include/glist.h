@@ -6,7 +6,6 @@
  */
 
 #pragma once
-
 #include "gcldef.h"
 
 namespace gcl {
