@@ -84,8 +84,39 @@ void gque_running_test()
     }
 }
 
+void gque_step_test()
+{
+    GQue q(10, sizeof(int));
+    for (int i=0; i<10; i++) q.put(&i);
+    for (int i=0; i<5; i++) q.get();
+    for (int i=10; i<15; i++) q.put(&i);
+
+
+    unsigned count = q.length();
+    dmsg("Count=%d ===\n", count);
+    while (count-- > 0) {
+        int val;
+        q.pop(&val);
+        if (val % 2 == 0) {
+            printf("val=%d removed. len=%d\n", val, q.length());
+            continue;
+        }
+        q.put(&val);
+    }
+
+    int *p = (int *)q.peek();
+    dmsg("Que length=%d\n", q.length());
+    void *marker = q.tail();
+    int index = 0;
+    while (p) {
+        printf("index=%i odd val=%d\n", index++, *p);
+        p = (int *)q.peekNext(p);
+    }
+}
+
 int main()
 {
-    gque_test();
-    gque_running_test();
+    gque_step_test();
+    // gque_test();
+    // gque_running_test();
 }
