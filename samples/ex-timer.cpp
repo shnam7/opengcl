@@ -17,7 +17,7 @@ int main()
 	int n=0;
 	while ( n++<100 )
 	{
-		printf( "ticks=%lu nanoticks=%llu\n", GTimer::ticks(), GTimer::nanoTicks() );
+		printf( "ticks=%u nanoticks=%zu\n", GTimer::ticks(), GTimer::nanoTicks() );
 //		gtime_msleep( 0 );
 	}
 
@@ -27,7 +27,7 @@ int main()
     // usleep(50);
 	nanotick_t el = GTimer::nanoElapsed(tm1);
 
-	printf( "tm1=%llu elapsed=%llu\n", tm1, el );
+	printf( "tm1=%zu elapsed=%zu\n", tm1, el );
 	// printf( "elapsed = %ld\n", elapsed );
 
 	// tm1 = 0xFFFFFFFFUL - 10;

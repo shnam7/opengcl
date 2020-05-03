@@ -73,7 +73,7 @@ public:
 
     //--- accessors
     bool isRunning() const { return m_t != GTHREAD_NULL; }
-    u32_t threadID() const { return (u32_t)m_t; }
+    uintptr_t threadID() const { return (uintptr_t)m_t; }
     gthread_t threadHandle() const { return m_t; }
 
     // Returns OS dependent handle.

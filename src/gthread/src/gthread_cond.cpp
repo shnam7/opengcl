@@ -111,11 +111,11 @@ gcl_api int gthread_cond_signal(gthread_cond_t *cond)
     DWORD r = WaitForSingleObject(cond->h_mutex, INFINITE);
     if (r != WAIT_OBJECT_0 && r != WAIT_ABANDONED) return GetLastError();
 
-    int do_wakeup = 0;
+    // int do_wakeup = 0;
     if (cond->nr_sleepers > 0) {
         if (++cond->nr_wakers == 0) /* check for overflow */
             cond->nr_wakers = 0xFFFFFFFF;
-        do_wakeup = 1;
+        // do_wakeup = 1;
     }
     ReleaseMutex(cond->h_mutex);
 
@@ -130,10 +130,10 @@ gcl_api int gthread_cond_broadcast(gthread_cond_t *cond)
     if (r != WAIT_OBJECT_0 && r != WAIT_ABANDONED)
         return GetLastError();
 
-    int do_wakeup = 0;
+    // int do_wakeup = 0;
     if (cond->nr_sleepers > 0) {
         cond->nr_wakers = 0xFFFFFFFF;
-        do_wakeup = 1;
+        // do_wakeup = 1;
     }
     ReleaseMutex(cond->h_mutex);
 

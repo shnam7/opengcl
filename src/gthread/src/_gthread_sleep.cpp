@@ -13,7 +13,11 @@
 #include "gcldef.h"
 
 #if defined (_WIN32)
+
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0400
+#endif
+
 #include <stdint.h>
 #include <windows.h>
 #include "_gthread.h"

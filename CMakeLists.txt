@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.10.2)
+project(OpenGCL VERSION 1.0.0)
 
-project(opengcl VERSION 1.0.0)
-set (EXCLUDE_DIR __trash)
+
+set(EXCLUDE_DIR __trash)
 
 #--- Compiler options
-# set (CMAKE_CXX_STANDARD 11)
-set(COMPILE_OPTIONS -O3 -Wall -fomit-frame-pointer -MMD)
-if (WIN32)
-    set(COMPILE_OPTIONS -DGCL_EXPORTS)
-endif()
-if (MSVC)
-    set(COMPILE_OPTIONS ${COMPILE_OPTIONS} -D_CRT_SECURE_NO_WARNINGS -D_WINSOCK_DEPRECATED_NO_WARNINGS)
-endif()
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-#--- variables
-add_compile_options(${COMPILE_OPTIONS})
-add_compile_definitions(${COMPILE_DEFINITIONS})
+# add_compile_options($<$<CONFIG:DEBUG>:-Wall>)     # -fomit-frame-pointer
+add_compile_definitions($<$<CONFIG:DEBUG>:_DEBUG>)
+add_compile_definitions($<$<BOOL:WIN32>:GCL_EXPORTS>)
+add_compile_definitions($<$<BOOL:MINGW>:__USE_MINGW_ANSI_STDIO>)   # fix printf format string warnings
+add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
+add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:_WINSOCK_DEPRECATED_NO_WARNINGS>)
+
 include_directories(include src/gthread/include)
+
 
 #--- source files
 set (SRC_COMMON
@@ -59,32 +59,9 @@ set(SAMPLES
 )
 
 set (SRC ${SRC_COMMON} ${SRC_GTHREAD})
-
-
-# Microsoft Visual Studio support
 if (WIN32)  # NOT for CYGWIN
     list(APPEND SRC src/win32/opengcl_dll.cpp )
 endif()
-
-# gthread not supported in MINGW (gtime, gmbox depends on gthread)
-# if (MINGW)
-#     list(REMOVE_ITEM SRC
-#         # src/gmbox.cpp
-#         # src/gsocket.cpp
-#         # src/gsocket_x.cpp
-#         # src/gthread_x.cpp
-#         # src/gtok.cpp
-#         # src/gutil.cpp
-#         # src/gthread.cpp
-#     )
-#     list(REMOVE_ITEM SAMPLES
-#         # samples/ex-mbox.cpp
-#         # samples/ex-socket.cpp
-#         # samples/ex-thread.c
-#         # samples/ex-thread_x.cpp
-#         # samples/ex-tok.cpp
-#     )
-# endif()
 
 
 #--- Build opengcl library
@@ -94,8 +71,6 @@ if(WIN32)
 else()
     # target_link_libraries(pthread)
 endif()
-
-# target_compile_definitions(opengcl PUBLIC ${COMPILE_DEFINITIONS})
 
 
 #--- Build samples

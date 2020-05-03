@@ -51,13 +51,13 @@ int main()
     sem.post();
 
     t1.join( &retval );
-	printf( "tid=%03u finished. ret=%p\n", t1.threadID(), retval );
+	printf( "tid=%03zu finished. ret=%p\n", t1.threadID(), retval );
 
 	t2.join( &retval );
-	printf( "tid=%03u finished. ret=%p\n", t2.threadID(), retval );
+	printf( "tid=%03zu finished. ret=%p\n", t2.threadID(), retval );
 
 	t3.join( &retval );
-    printf( "tid=%03u finished. ret=%p\n", t3.threadID(), retval );
+    printf( "tid=%03zu finished. ret=%p\n", t3.threadID(), retval );
 
 	sem.getValue(&val);
 	printf( "Finally, Sem value=%d\n", val );

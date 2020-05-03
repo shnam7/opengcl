@@ -55,7 +55,6 @@ typedef u_long		ipaddr_t;
 
 /*--- V protocol */
 #if defined(_WIN32)
-#pragma warning( disable: 4200 )	// disable zero-size array warning.
 #pragma pack(1)
 typedef struct _vpacket_t {
 	unsigned char	type;

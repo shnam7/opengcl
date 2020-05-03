@@ -10,7 +10,6 @@
 //
 //
 
-
 #include "gthread.h"
 #include "gtimer.h"
 #include <stdio.h>
@@ -25,7 +24,7 @@ void *foo(void *data)
         gsleep(300);
         // gnanosleep(500000000);
         elapsed = GTimer::nanoElapsed(tm);
-		printf( "tid=%d count=%i nanotick=%llu elapsed=%llu\n", val, i, tm, elapsed);
+		printf( "tid=%d count=%i nanotick=%zu elapsed=%zu\n", val, i, tm, elapsed);
     }
 	return 0;
 }
