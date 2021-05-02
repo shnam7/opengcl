@@ -5,89 +5,65 @@
  */
 
 #pragma once
-#include "gmbox.h"
 #include "glist.h"
+#include "gque.h"
+
+#ifndef GEVENT_NAME_LENGTH_MAXIMUM
+#define GEVENT_NAME_LENGTH_MAXIMUM      15
+#endif
 
 namespace gcl {
 
-const int MAX_EVENT_NAME_LENGTH = 15;
-class gcl_api GEvent {
+//-----------------------------------------------------------------------------
+//  class event_emitter
+//-----------------------------------------------------------------------------
+class gcl_api event_emitter {
+public:
+    struct _event_handler_block;
+    typedef struct _event_handler_block event_handler_block;
+    typedef void (*event_handler)(event_handler_block&);
+
+    struct _event_handler_block {
+        const char      *name;
+        event_handler   handler;
+        void            *data;
+        u64_t           data_ex;        // extra data;
+        bool            once;
+    };
+
+    typedef event_handler_block event;   // for external use
+
 protected:
-    const char          *m_eventName;
-    const void          *m_data;;
-    unsigned long       m_extraData;
+    typedef struct _event_name_t {
+        char name[GEVENT_NAME_LENGTH_MAXIMUM + 1];
+    } event_name_t;
+
+    queue<event_name_t>             m_event_name_que;
+    queue<event_handler_block>      m_event_handler_que;
 
 public:
-    GEvent(const char *eventName, void *data, unsigned long extraData)
-        : m_eventName(eventName), m_data(data), m_extraData(extraData) {}
-    ~GEvent() {}
+    event_emitter(unsigned max_event_types=20, unsigned event_queue_size=30)
+        : m_event_name_que(max_event_types), m_event_handler_que(event_queue_size) {}
+    ~event_emitter() {}
 
-    const char *eventName() { return m_eventName; }
-    const void *data() { return m_data; }
-    unsigned long extraData() { return m_extraData; }
+    bool on(const char *event_name, event_handler handler, void *data=0, u64_t data_ex=0)
+        { return _on(event_name, handler, data, data_ex); }
 
-    typedef void (*Handler)(GEvent &e);
+    bool off(const char *event_name, event_handler handler);
+
+    bool once(const char *event_name, event_handler handler, void *data=0, u64_t data_ex=0)
+        { return _on(event_name, handler, data, data_ex, true); }
+
+    bool emit(const char *event_name);
+
+protected:
+    bool _on(const char *event_name, event_handler handler, void *data=0,
+            u64_t data_ex=0, bool once=false);
+
+    const char *_find_event_name(const char *event_name);
+    const char *_register_event_name(const char *event_name);
+    const char *_unregister_event_name(const char *event_name);
 };
 
-
-//-----------------------------------------------------------------------------
-//  class GEventQ
-//-----------------------------------------------------------------------------
-typedef struct {
-    GEvent::Handler     handler;        // event handler
-    void                *data;          // user data
-    unsigned long       extraData;      // extra data
-    bool                once;
-} _event_listener;
-
-class gcl_api GEventQ : public gcl::list<GEventQ>::node, public gcl::mbox<_event_listener> {
-protected:
-
-protected:
-    char                            m_eventName[MAX_EVENT_NAME_LENGTH+1];
-    friend class GEventEmitter;
-
-public:
-    GEventQ(const char *eventName, unsigned eventQSize=32);
-
-    bool addListener(GEvent::Handler handler, void *data = 0,
-                     unsigned long extraData = 0, bool once = false);
-    void removeListener(GEvent::Handler handler);
-    void processEvents();
-
-    const char *eventName() { return m_eventName; }
-};
-
-
-//-----------------------------------------------------------------------------
-//  class GEventEmitter
-//-----------------------------------------------------------------------------
-class gcl_api GEventEmitter {
-protected:
-    gcl::list<GEventQ>      m_eqList;      // event queue list
-    unsigned                m_eqSize = 12;
-
-public:
-    GEventEmitter(unsigned eventQSize=12): m_eqSize(eventQSize) {}
-    ~GEventEmitter() {}
-
-    void on(const char *eventName, GEvent::Handler handler, void *data=0, unsigned long extraData=0)
-        { _on(eventName, handler, data, extraData); }
-
-    void off(const char *eventName, GEvent::Handler handler);
-
-    void once(const char *eventName, GEvent::Handler handler, void *data=0, unsigned long extraData=0)
-        { _on(eventName, handler, data, extraData, true); }
-
-    void emit(const char *eventName);
-
-protected:
-    void _on(const char *eventName, GEvent::Handler handler, void *data = 0,
-             unsigned long extraData = 0, bool once = false);
-    GEventQ *_findEventQ(const char *eventName);
-};
 
 } // namespace gcl
-
-using GEvent = gcl::GEvent;
-using GEventEmitter = gcl::GEventEmitter;

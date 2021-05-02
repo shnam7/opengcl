@@ -8,34 +8,33 @@
 //
 
 #include "gmmap.h"
-#include <stdio.h>
 #include <memory.h>
+#include <stdio.h>
 
 int main()
 {
-	GMMapFile mfile;
-	const char *cp = mfile.mmap_ro( "../samples/ex-mmap.cpp" );
+    gcl::mmap_file mfile;
+    const char *cp = mfile.mmap_ro("../samples/ex-mmap.cpp");
 
-	size_t size = mfile.getSize();
-	printf( "File mapping: r=%p Size=%zu\n", cp, size );
-	for (unsigned i=0; i<size; ++i)
-		printf( "%c", mfile[i] );
+    size_t size = mfile.get_size();
+    printf("File mapping: r=%p Size=%zu\n", cp, size);
+    for (unsigned i = 0; i < size; ++i)
+        printf("%c", mfile[i]);
 
-	mfile.close();
+    mfile.close();
 
-	char *p = mfile.mmap_vrw( 1024*1024 );
-	size = mfile.getSize();
-	printf( "Virtual memory mapping: r=%p Size=%zu\n", p, size );
-	memset( p, 'A', size );
-	for (unsigned i=0; i<size; ++i)
-	{
-		if ( mfile[i] != 'A' )
-		{
-			printf( "-->Error: data was not written.\n" );
-			return -1;
-		}
-	}
-	printf( "--> Ok!\n" );
-	return 0;
+    char *p = mfile.mmap_vrw(1024 * 1024);
+    size = mfile.get_size();
+    printf("Virtual memory mapping: r=%p Size=%zu\n", p, size);
+    memset(p, 'A', size);
+    for (unsigned i = 0; i < size; ++i)
+    {
+        if (mfile[i] != 'A')
+        {
+            printf("-->Error: data was not written.\n");
+            return -1;
+        }
+    }
+    printf("--> Ok!\n");
+    return 0;
 }
-

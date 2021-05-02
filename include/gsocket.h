@@ -26,7 +26,7 @@
 #pragma once
 #include "gcldef.h"
 
-#if defined( _WIN32 )
+#ifdef _WIN32
 #include <winsock2.h>
 #else
 #include <netinet/in.h>
@@ -34,7 +34,6 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #endif
-
 
 #define	GSOCK_TIMEOUT	5000	/* msec */
 
@@ -54,7 +53,7 @@ typedef u_long		ipaddr_t;
 
 
 /*--- V protocol */
-#if defined(_WIN32)
+#ifdef _WIN32
 #pragma pack(1)
 typedef struct _vpacket_t {
 	unsigned char	type;
@@ -110,8 +109,7 @@ gcl_api int gsock_connect_by_name(socket_t sock, const char *addr, int port);
 
 gcl_api int gsock_listen(socket_t sock, ipaddr_t ipAddr, int port, int backlog);
 
-inline socket_t gsock_accept(socket_t sock, struct sockaddr *addr,
-		socklen_t *addrLen)
+inline socket_t gsock_accept(socket_t sock, struct sockaddr *addr, socklen_t *addrLen)
 	{ return accept(sock, addr, addrLen); }
 
 inline socket_t gsock_accept2(socket_t sock, struct sockaddr_in *addr)
@@ -245,7 +243,7 @@ protected:
 	socket_t		m_sock;
 
 private:
-	gsocket(const gsocket& gsock);		// copy constructor is not allowed.
+	gsocket(const gsocket& sock);		// copy constructor is not allowed.
 	gsocket operator=(socket_t sock);	// assignment is not allowed
 
 public:
@@ -255,13 +253,13 @@ public:
 	//--- creators
 	gsocket() : m_sock(-1) {}
 	gsocket(socket_t sock) : m_sock(sock) {}
-	~gsocket() { closeSocket(); }
+	~gsocket() { close_socket(); }
 
 	//--- manipulations
-	bool createSocket(int type, unsigned long nbio);
-	bool createSocket(unsigned long nbio)
-		{ return createSocket(SOCK_STREAM, nbio); }
-	bool closeSocket();
+	bool create_socket(int type, unsigned long nbio);
+	bool create_socket(unsigned long nbio)
+		{ return create_socket(SOCK_STREAM, nbio); }
+	bool close_socket();
 	bool shutdown(int how=SHUT_RDWR)
 		{ return gsock_shutdown(m_sock, how) != 0; }
 	bool attach(socket_t sock);
@@ -302,57 +300,54 @@ public:
 	bool writevp(const vpacket_t *vp, int len,
 			unsigned long timeout=VNET_TIMEOUT) const
 		{ return gsock_writevpn(m_sock, vp, len, timeout) != 0; }
-	bool simpleReply(unsigned int code, unsigned long timeout=VNET_TIMEOUT)
+	bool simple_reply(unsigned int code, unsigned long timeout=VNET_TIMEOUT)
 	{
 		return gsock_simple_reply(m_sock, code, timeout) != 0;
 	}
 
 	//--- attributes
-	bool setNBIO(bool nbio) const
+	bool set_NBIO(bool nbio) const
 		{ return gsock_set_NBIO(m_sock, nbio) != 0; }
-	int setReceiveBufferSize(int size) const
+	int set_receive_buffer_size(int size) const
 		{ return gsock_set_receive_buffer_size(m_sock, size); }
-	int setSendBufferSize(int size) const
+	int set_send_buffer_size(int size) const
 		{ return gsock_set_send_buffer_size(m_sock, size); }
 
-	bool getSocketName(sockaddr *name, socklen_t *namelen) const
+	bool get_socket_name(sockaddr *name, socklen_t *namelen) const
 		{ return gsock_get_socket_name(m_sock, name, namelen) != 0; }
-	bool getSocketName(sockaddr_in *name) const
+	bool get_socket_name(sockaddr_in *name) const
 		{ return gsock_get_socket_name2(m_sock, name) != 0; }
-	bool getPeerName(sockaddr *name, socklen_t *namelen) const
+	bool get_peer_name(sockaddr *name, socklen_t *namelen) const
 		{ return gsock_get_peer_name(m_sock, name, namelen) != 0; }
-	bool getPeerName(sockaddr_in *name) const
+	bool get_peer_name(sockaddr_in *name) const
 		{ return gsock_get_peer_name2(m_sock, name) != 0; }
 
-	int getReceiveBufferSize() const
+	int get_receive_buffer_size() const
 		{ return gsock_get_receive_buffer_size(m_sock); }
-	int getSendBufferSize() const
+	int get_send_buffer_size() const
 		{ return gsock_get_send_buffer_size(m_sock); }
-	int getReadableCount() const
+	int get_readable_count() const
 		{ return gsock_get_readable_count(m_sock); }
 
-	int getError() const { return gsock_get_error(m_sock); }
-	int checkReadable(unsigned long timeout=0) const
+	int get_error() const { return gsock_get_error(m_sock); }
+	int check_readable(unsigned long timeout=0) const
 		{ return gsock_check_readable(m_sock, timeout); }
-	int checkWritable(unsigned long timeout=0) const
+	int check_writable(unsigned long timeout=0) const
 		{ return gsock_check_writable(m_sock, timeout); }
-	bool isReadable(unsigned long timeout=0) const
+	bool is_readable(unsigned long timeout=0) const
    		{ return gsock_is_readable(m_sock, timeout) != 0; }
-	bool isWritable(unsigned long timeout=0) const
+	bool is_writable(unsigned long timeout=0) const
    		{ return gsock_is_writable(m_sock, timeout) != 0; }
 
-	bool setOptReuseAddr(bool reuse)
+	bool setopt_reuse_addr(bool reuse)
 		{ return gsock_setopt_reuse_addr(m_sock, (int)reuse) != 0; }
 
-	bool isValid() const { return m_sock != (socket_t)-1; }
+	bool is_valid() const { return m_sock != (socket_t)-1; }
 
-	socket_t getSocket() const { return m_sock; }
+	socket_t get_socket() const { return m_sock; }
 
 	//--- operators
 	operator socket_t() const { return m_sock; }
 };
 
 } // namespace gcl
-
-
-typedef gcl::gsocket    GSocket;

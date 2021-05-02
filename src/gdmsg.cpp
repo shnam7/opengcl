@@ -1,5 +1,5 @@
 /*
- *	* gdmsg.c
+ *	* gdmsg.cpp
  *
  *	OpenGCL Module : Generic Debug Message Interface
  *
@@ -16,7 +16,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-gcl_api void dmsg(const char *fmt, ...)
+gcl_api void gcl::dmsg(const char *fmt, ...)
 {
 	va_list va; va_start( va, fmt );
 	vprintf( fmt, va );

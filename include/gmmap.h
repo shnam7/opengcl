@@ -1,140 +1,161 @@
 /*
  *  @packaage OpenGCL
  *
- *  @module gmmap - memory mapped file
+ *  @module mmap - memory mapped file
  */
 
 #pragma once
 #include "gcldef.h"
 #include <sys/types.h>
 
-#if defined( _WIN32 )
+#if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+typedef _off_t off_t;
+
 #else
 #include <sys/mman.h>
 #endif
 
-
-namespace gcl {
-
-#if defined( _WIN32 )
-typedef _off_t		off_t;
-#endif
+namespace gcl
+{
 
 //--------------------------------------------------------------------
-//	class GMMap
+//	class mmap
 //--------------------------------------------------------------------
-class gcl_api gmmap {
+class gcl_api mmap
+{
 protected:
-	char				*m_ptr      = 0;
-	size_t		        m_size      = 0;
-	void                *m_hMap     = 0;
+    void        *m_hMap = 0; // handle to mmap
+    char        *m_ptr = 0;
+    size_t      m_size = 0;
 
 public:
-	gmmap() {}
-	~gmmap() { close(); }
+    mmap() {}
+    ~mmap() { close(); }
 
-	// read only mappings
-	const char *mmap_ro(int filedes, off_t offset, size_t size, const char *name=0)
-		{ return _mmap(filedes, offset, size, true, name); }
+    // read only mappings
+    const char *mmap_ro(int filedes, off_t offset, size_t size, const char *name = 0)
+    {
+        return _mmap(filedes, offset, size, true, name);
+    }
 
-		// size becomes to whole file length
-	const char *mmap_ro(int filedes, off_t offset, const char *name=0)
-		{ return _mmap(filedes, offset, 0, true, name); }	// size becomes to file length
+    // size becomes to whole file length
+    const char *mmap_ro(int filedes, off_t offset, const char *name = 0)
+    {
+        return _mmap(filedes, offset, 0, true, name);
+    }
 
-		// offset defaults to zero, size becomes to whole file length
-	const char *mmap_ro(int filedes, const char *name=0)
-		{ return _mmap(filedes, 0, 0, true, name); }		// size becomes to file length
+    // offset defaults to zero, size becomes to whole file length
+    const char *mmap_ro(int filedes, const char *name = 0)
+    {
+        return _mmap(filedes, 0, 0, true, name);
+    }
 
-		// maps to system virtual memory
-	const char *mmap_vro(int size, const char *name=0)
-		{ return _mmap(-1, 0, size, true, name); }
+    // maps to system virtual memory
+    const char *mmap_vro(int size, const char *name = 0)
+    {
+        return _mmap(-1, 0, size, true, name);
+    }
 
-	// read/write mappings
-	char *mmap_rw(int filedes, off_t offset, size_t size, const char *name=0)
-		{ return _mmap(filedes, offset, size, false, name); }
+    // read/write mappings
+    char *mmap_rw(int filedes, off_t offset, size_t size, const char *name = 0)
+    {
+        return _mmap(filedes, offset, size, false, name);
+    }
 
-		// size becomes to whole file length
-	char *mmap_rw(int filedes, off_t offset, const char *name=0)
-		{ return _mmap(filedes, offset, 0, false, name); }
+    // size becomes to whole file length
+    char *mmap_rw(int filedes, off_t offset, const char *name = 0)
+    {
+        return _mmap(filedes, offset, 0, false, name);
+    }
 
-		// offset defaults to zero, size becomes to whole file length
-	char *mmap_rw(int filedes, const char *name=0)
-		{ return _mmap(filedes, 0, 0, false, name); }	// size becomes to file length
+    // offset defaults to zero, size becomes to whole file length
+    char *mmap_rw(int filedes, const char *name = 0)
+    {
+        return _mmap(filedes, 0, 0, false, name);
+    }
 
-		// maps to system virtual memory
-	char *mmap_vrw(int size, const char *name=0)
-		{ return _mmap(-1, 0, size, false, name); }
+    // maps to system virtual memory
+    char *mmap_vrw(int size, const char *name = 0)
+    {
+        return _mmap(-1, 0, size, false, name);
+    }
 
-	void close();
+    void close();
 
+    //--- operators
+    operator char *() { return m_ptr; }
+    operator const char *() const { return m_ptr; }
+    char &operator[](int index) { return m_ptr[index]; }
+    const char &operator[](int index) const { return m_ptr[index]; }
 
-	//--- operators
-	operator char *() { return m_ptr; }
-	operator const char *() const { return m_ptr; }
-	char& operator [](int index) { return m_ptr[index]; }
-	const char& operator [](int index) const { return m_ptr[index]; }
-
-	//--- accessors
-	bool isValid() const { return m_ptr!=0; }
-	size_t getSize() const { return m_size; }
-	const char *begin() const { return m_ptr; }
-	const char *end() const { return m_ptr+m_size; }
-	char *begin() { return m_ptr; }
-	char *end() { return m_ptr+m_size; }
+    //--- accessors
+    bool is_valid() const { return m_ptr != 0; }
+    size_t get_size() const { return m_size; }
+    const char *begin() const { return m_ptr; }
+    const char *end() const { return m_ptr + m_size; }
+    char *begin() { return m_ptr; }
+    char *end() { return m_ptr + m_size; }
 
 protected:
-	char *_mmap(int filedes, off_t offset, size_t size, bool readonly,
-			const char *name);
+    char *_mmap(int filedes, off_t offset, size_t size, bool readonly, const char *name);
 };
 
 
 //--------------------------------------------------------------------
-//	class GMMapFile
+//	class mmap_file
 //--------------------------------------------------------------------
-class gcl_api gmmap_file : public gmmap {
+class gcl_api mmap_file : public mmap
+{
 protected:
-	int			m_fd = -1;  // file descriptor
+    int m_fd = -1; // file descriptor
 
 public:
-	gmmap_file() {}
-	~gmmap_file() { close(); }
+    mmap_file() {}
+    ~mmap_file() { close(); }
 
-	//--- manipulators
-	// read only mappings
-	const char *mmap_ro(const char *filePathName, off_t offset, size_t size, const char *name=0)
-		{ return _mmap(filePathName, offset, size, true, name ); }
+    //--- manipulators
+    // read only mappings
+    const char *mmap_ro(const char *filePathName, off_t offset, size_t size, const char *name = 0)
+    {
+        return _mmap(filePathName, offset, size, true, name);
+    }
 
-	const char *mmap_ro(const char *filePathName, off_t offset, const char *name=0)
-		{ return _mmap(filePathName, offset, 0, true, name ); }
+    const char *mmap_ro(const char *filePathName, off_t offset, const char *name = 0)
+    {
+        return _mmap(filePathName, offset, 0, true, name);
+    }
 
-	const char *mmap_ro(const char *filePathName, const char *name=0)
-		{ return _mmap(filePathName, 0, 0, true, name); }
+    const char *mmap_ro(const char *filePathName, const char *name = 0)
+    {
+        return _mmap(filePathName, 0, 0, true, name);
+    }
 
-	// read/write mappings
-	char *mmap_rw(const char *filePathName, off_t offset, size_t size, const char *name=0)
-		{ return _mmap(filePathName, offset, size, false, name ); }
+    // read/write mappings
+    char *mmap_rw(const char *filePathName, off_t offset, size_t size, const char *name = 0)
+    {
+        return _mmap(filePathName, offset, size, false, name);
+    }
 
-	char *mmap_rw(const char *filePathName, off_t offset, const char *name=0)
-		{ return _mmap(filePathName, offset, 0, false, name ); }
+    char *mmap_rw(const char *filePathName, off_t offset, const char *name = 0)
+    {
+        return _mmap(filePathName, offset, 0, false, name);
+    }
 
-	char *mmap_rw(const char *filePathName, const char *name=0)
-		{ return _mmap(filePathName, 0, 0, false, name); }
+    char *mmap_rw(const char *filePathName, const char *name = 0)
+    {
+        return _mmap(filePathName, 0, 0, false, name);
+    }
 
-	void close();
+    void close();
 
-	//--- accessors
-	int getFileDescriptor() const { return m_fd; }
-	size_t getFileLength() const;
+    //--- accessors
+    int get_file_descriptor() const { return m_fd; }
+    size_t get_file_length() const;
 
 protected:
-	char *_mmap(const char *filePathName, off_t offset,
-			size_t size, bool readonly, const char *name);
+    char *_mmap(const char *filePathName, off_t offset, size_t size, bool readonly, const char *name);
 };
 
 } // namespace gcl
-
-
-typedef gcl::gmmap          GMMap;
-typedef gcl::gmmap_file     GMMapFile;

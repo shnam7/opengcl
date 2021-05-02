@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <string.h>
 
+using namespace gcl;
+
 #if !defined( _WIN32 )
 #include <arpa/inet.h>
 #include <unistd.h>
@@ -21,17 +23,17 @@
 
 static void *_serv_d(void *data)
 {
-	GThread *pT = GThread::getCurrent();
-	GSocket gs( *(socket_t *)data );
+	thread *th = thread::get_current();
+	gsocket gs( *(socket_t *)data );
 
-	if ( !gs.isValid() ) { delete pT; return 0; }
-	gs.setNBIO( true );
+	if ( !gs.is_valid() ) { delete th; return 0; }
+	gs.set_NBIO( true );
 
 	int count = 0;
 	for ( ;; )
 	{
 		char buf[1024];
-		if ( !gs.isWritable(1000) )
+		if ( !gs.is_writable(1000) )
 		{
 			printf( "Socket is not writable.\n" );
 			break;
@@ -44,18 +46,18 @@ static void *_serv_d(void *data)
 //		if ( ::send( gs.getSocket(), buf, slen, MSG_DONTWAIT )!=slen) break;
 		printf( "send=<%s>", buf  );
 	}
-	gs.closeSocket();
+	gs.close_socket();
 	printf( "connection closed\n" );
-	delete pT;
+	delete th;
 	return 0;
 }
 
 void _server()
 {
-	GSocket gsListener;
+	gsocket gsListener;
 
 	printf( "Starting server...\n" );
-	int r = gsListener.createSocket( true );
+	int r = gsListener.create_socket( true );
 	if ( !r )
 	{
 		printf( "socket creation error.\n" );
@@ -64,14 +66,14 @@ void _server()
 	r = gsListener.listen( INADDR_ANY, EX_PORT );
 	if ( !r )
 	{
-		printf( "socket listen error: sock=%d.\n", (int)gsListener.getSocket() );
+		printf( "socket listen error: sock=%d.\n", (int)gsListener.get_socket() );
 		return;
 	}
 	printf( "listen ready!\n" );
 
 	while ( 1 )
 	{
-		int r = gsListener.checkReadable( 10 );
+		int r = gsListener.check_readable( 10 );
 		if ( r < 0 ) break;		// error
 		if ( r== 0 ) continue;
 		sockaddr_in sa;
@@ -80,18 +82,18 @@ void _server()
 		if ( sock == INVALID_SOCKET ) continue;
 		printf( "client from %s accepted.\n", inet_ntoa(sa.sin_addr) );
 
-		GThread *pT = new GThread();
-		pT->start( _serv_d, (void *)&sock );
+		thread *th = new thread();
+		th->start( _serv_d, (void *)&sock );
 /*		pid_t pid = fork();
 		if ( pid == 0 )	// child process
 		{
 			gcl::socket gs(sock);
-			if ( !gs.isValid() ) return;
-			if ( !gs.setNBIO( true ) ) printf("error at \n");
+			if ( !gs.is_valid() ) return;
+			if ( !gs.set_NBIO( true ) ) printf("error at \n");
 			char buf[1024];
 			for (int i=0; true; ++i)
 			{
-				if ( !gs.isWritable(1000) )
+				if ( !gs.is_writable(1000) )
 				{
 					printf( "Socket is not writable.\n" );
 					break;
@@ -100,12 +102,12 @@ void _server()
 				int slen = strlen( buf );
 				if ( gs.write(buf, slen, 1000) != slen ) break;
 //				if ( gs.send(buf, slen) != slen ) break;
-//				if ( ::send( gs.getSocket(), buf, slen, MSG_DONTWAIT )!=slen) break;
+//				if ( ::send( gs.get_socket(), buf, slen, MSG_DONTWAIT )!=slen) break;
 				printf( "send=%d\n", i );
 				//sleep( 1 );
 			}
 			printf( "connection closed\n" );
-			gs.closeSocket();
+			gs.close_socket();
 			_exit(0);
 		}
 		*/
@@ -115,31 +117,31 @@ void _server()
 
 void _client()
 {
-	GSocket gs;
+	gsocket gs;
 
 	printf( "Starting client...\n" );
 
 	//--- create socket
-	gs.createSocket( true );
+	gs.create_socket( true );
 	//gs.connect( inet_addr("127.0.0.1"), EX_PORT );
 	// gs.connect( "127.0.0.1", EX_PORT );
 	// gs.connect( "surf", EX_PORT );
 	gs.connect( "localhost", EX_PORT );
 
 	//--- connect to server
-	if ( !gs.isWritable(1000) )
+	if ( !gs.is_writable(1000) )
 	{
 		printf( "Connection failed.\n" );
 		return;
 	}
-	printf( "Socket ID=%d\n", (int)gs.getSocket() );
+	printf( "Socket ID=%d\n", (int)gs.get_socket() );
 
 
 	//--- read/write
 	while ( 1 )
 	{
 		char buf[1024];
-		if ( !gs.isReadable(1000) )
+		if ( !gs.is_readable(1000) )
 		{
 			printf( "socket readable timeout 1 sec\n" );
 			break;

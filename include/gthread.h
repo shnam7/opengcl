@@ -15,144 +15,193 @@
  */
 
 #pragma once
-#include "_gthread.h"
-#include "gthread_mutex.h"
-#include "gthread_cond.h"
-#include "gthread_rwlock.h"
+
+#include "gcldef.h"
+#include "gtime.h"
+#include <pthread.h>
 
 //--------------------------------------------------------------------
 //	class wrappers
 //--------------------------------------------------------------------
-namespace gcl {
-
-inline void sleep(u32_t msec) { gthread_sleep(msec); }
-inline void nanosleep(u64_t nsec) { gthread_nanosleep(nsec); }
-
+namespace gcl
+{
 
 //--- runnable
-class gcl_api _runnable {
-    friend class gthread;
+class gcl_api runnable
+{
+    friend class thread;
 
 protected:
-    _runnable() {}
-    virtual ~_runnable() {}
+    runnable() {}
+    virtual ~runnable() {}
     virtual void *run() { return (void *)0; }
 
     // NOTE: these functions applies for gthread_self()
     //   and should not be called by other thread.
-    void testCancel() { gthread_testcancel(); }
+    void testCancel() { pthread_testcancel(); }
 };
 
-
 //--- thread
-class gcl_api gthread : public _runnable {
-public:
-    typedef _runnable runnable;  // make gthread::runnable
+class gcl_api thread : public runnable
+{
+protected:
+    pthread_t       m_t;                        // pthread instance handle
+    u32_t           m_tid = (unsigned)(-1);     // thread id
 
 protected:
-    gthread_t       m_t;
-
-    // Not-allowed operations
-    gthread(gthread_t th);
-    gthread(gthread &th);
-    gthread &operator=(gthread &th);
-    gthread &operator=(gthread_t th);
+    static pthread_key_t    __key_to_instance;  // key to store pointer to thread object
+    static unsigned         __instance_count;   // # of active thread instances
+    static void *__thread_wrapper(void *);
+    static void __thread_destructor(void *);
 
 public:
-    gthread();
-    ~gthread();
+    thread();
+    ~thread();
 
     //--- manipulators
-    int start(gthread_attr_t *attr=0) { return start(this); }
-    int start(runnable *runnable);
-    int start(gthread_func_t func, void *data=0);
+    int start(pthread_attr_t *attr=0) { return start(this, attr); };
 
-    int join(void **thread_return = 0) const;
-    int stop();
-    void cancel() { gthread_cancel(m_t); }
+    int start(void *(*proc)(void *), void *data=0, pthread_attr_t *attr=0);
+
+    int start(runnable *runnable, pthread_attr_t *attr=0);
+    int start(runnable &runnable, pthread_attr_t *attr=0) { return start(&runnable, attr); }
+
+    int join(void **retval = 0) const { return is_running() ? pthread_join(m_t, retval) : 0; }
+
+    int stop(void *retval = 0);
+
+    void cancel() { if (is_running()) pthread_cancel(m_t); }
 
     //--- accessors
-    bool isRunning() const { return m_t != GTHREAD_NULL; }
-    uintptr_t threadID() const { return (uintptr_t)m_t; }
-    gthread_t threadHandle() const { return m_t; }
+    bool is_running() const { return m_tid != (unsigned)(-1); }
 
-    // Returns OS dependent handle.
-    // On win32 platforms, it returns win32 handle to thread.
-    uintptr_t getOSHandle() const { return gthread_get_oshandle(m_t); }
+    int thread_id() const { return m_tid; }
 
-protected:
-    int __start(void *pa);
-    static void *_thread_wrapper(void *);
-    static void _thread_cleanup(void *);
+    pthread_t get_handle() const { return m_t; }
 
 public:
-    // static thread *getCurrent() { return (thread *)gthread_getobject(); }
-    static gthread *getCurrent();
+    static thread *get_current();
+
+protected:
+    // not-allowed operations
+    thread(pthread_t t);
+    thread(thread &t);
+    thread &operator=(thread &t);
+    thread &operator=(pthread_t t);
 };
 
 
 //--- mutex
-class gcl_api gmutex {
+class gcl_api mutex
+{
 protected:
-    gthread_mutex_t m_mtx;
+    pthread_mutex_t m_mtx;
 
 public:
-    gmutex() { gthread_mutex_init(&m_mtx, 0); }
-    gmutex(int kind);
-    ~gmutex() { gthread_mutex_destroy(&m_mtx); }
+    mutex() { pthread_mutex_init(&m_mtx, 0); }
+    mutex(int kind);
+    ~mutex() { pthread_mutex_destroy(&m_mtx); }
 
-    bool lock() { return gthread_mutex_lock(&m_mtx) == 0; }
-    bool unlock() { return gthread_mutex_unlock(&m_mtx) == 0; }
-    bool trylock() { return gthread_mutex_trylock(&m_mtx) == 0; }
-    gthread_mutex_t *getMutex() { return &m_mtx; }
+    bool lock() { return pthread_mutex_lock(&m_mtx) == 0; }
+
+    bool unlock() { return pthread_mutex_unlock(&m_mtx) == 0; }
+
+    bool trylock() { return pthread_mutex_trylock(&m_mtx) == 0; }
+
+    pthread_mutex_t *get_handle() { return &m_mtx; }
 };
 
 
 //--- cond
-class gcond {
+class gcl_api condition
+{
 protected:
-	gthread_cond_t		m_cond;
+    pthread_cond_t m_cond;
 
 public:
-	gcond() { gthread_cond_init(&m_cond, 0); }
-	~gcond() { gthread_cond_destroy(&m_cond); }
+    condition() { pthread_cond_init(&m_cond, 0); }
+    ~condition() { pthread_cond_destroy(&m_cond); }
 
-	bool signal() { return gthread_cond_signal(&m_cond)==0; }
-	bool broadcast() { return gthread_cond_broadcast(&m_cond)==0; }
-	bool wait(gthread_mutex_t *mtx) { return gthread_cond_wait(&m_cond, mtx)==0; }
-	bool wait(gmutex& mtx) { return gthread_cond_wait(&m_cond, mtx.getMutex())==0; }
-	bool timedwait(gthread_mutex_t *mtx, unsigned long timeout_msec)
-		{ return gthread_cond_timedwait(&m_cond, mtx, timeout_msec)==0; }
-	bool timedwait(gmutex& mtx, unsigned long timeout_msec)
-		{ return timedwait(mtx.getMutex(), timeout_msec); }
-	gthread_cond_t *getCond() { return &m_cond; }
+    bool signal() { return pthread_cond_signal(&m_cond) == 0; }
+
+    bool broadcast() { return pthread_cond_broadcast(&m_cond) == 0; }
+
+    bool wait(pthread_mutex_t *mtx) { return pthread_cond_wait(&m_cond, mtx) == 0; }
+
+    bool wait(mutex &mtx) { return pthread_cond_wait(&m_cond, mtx.get_handle()) == 0; }
+
+    bool timedwait(pthread_mutex_t *mtx, const struct timespec *ts) { return pthread_cond_timedwait(&m_cond, mtx, ts) == 0; }
+
+    bool timedwait(pthread_mutex_t *mtx, unsigned long timeout_msec)
+    {
+        struct timespec ts;
+        ts.tv_sec = timeout_msec / 1000;
+        ts.tv_nsec = (timeout_msec % 1000) * 1000000;
+        return pthread_cond_timedwait(&m_cond, mtx, &ts) == 0;
+    }
+
+    bool timedwait(mutex &mtx, const struct timespec *ts) { return timedwait(mtx.get_handle(), ts); }
+
+    bool timedwait(mutex &mtx, unsigned long timeout_msec) { return timedwait(mtx.get_handle(), timeout_msec); }
+
+    pthread_cond_t *get_handle() { return &m_cond; }
 };
 
 
 //--- rwlock
-class grwlock {
+class gcl_api rwlock
+{
 protected:
-	gthread_rwlock_t		m_rwlock;
+    pthread_rwlock_t m_rwlock;
 
 public:
-	grwlock() { gthread_rwlock_init(&m_rwlock, 0); }
-	~grwlock() { gthread_rwlock_destroy(&m_rwlock); }
+    rwlock() { pthread_rwlock_init(&m_rwlock, 0); }
+    ~rwlock() { pthread_rwlock_destroy(&m_rwlock); }
 
-	int rdlock() { return gthread_rwlock_rdlock(&m_rwlock); }
-	int tryrdlock() { return gthread_rwlock_tryrdlock(&m_rwlock); }
-	int wrlock() { return gthread_rwlock_wrlock(&m_rwlock); }
-	int trywrlock() { return gthread_rwlock_trywrlock(&m_rwlock); }
-	int unlock() { return gthread_rwlock_unlock(&m_rwlock); }
+    int rdlock() { return pthread_rwlock_rdlock(&m_rwlock); }
+
+    int tryrdlock() { return pthread_rwlock_tryrdlock(&m_rwlock); }
+
+    int wrlock() { return pthread_rwlock_wrlock(&m_rwlock); }
+
+    int trywrlock() { return pthread_rwlock_trywrlock(&m_rwlock); }
+
+    int unlock() { return pthread_rwlock_unlock(&m_rwlock); }
+
+    pthread_rwlock_t *get_handle() { return &m_rwlock; }
+};
+
+
+//--- autolock: locked by constructor, unlocked by destructor
+class gcl_api autolock {
+protected:
+    mutex &m_mtx;
+
+public:
+    autolock(mutex &mtx) : m_mtx(mtx) { mtx.lock(); }
+    ~autolock() { m_mtx.unlock(); }
+};
+
+
+//--- autolock_rd: autolock for read
+class gcl_api autolock_rd {
+protected:
+    rwlock &m_lock;
+
+public:
+    autolock_rd(rwlock &lock) : m_lock(lock) { lock.rdlock(); }
+    ~autolock_rd() { m_lock.unlock(); }
+};
+
+
+//--- autolock_wr: autolock for read
+class gcl_api autolock_wr {
+protected:
+    rwlock &m_lock;
+
+public:
+    autolock_wr(rwlock &lock) : m_lock(lock) { lock.wrlock(); }
+    ~autolock_wr() { m_lock.unlock(); }
 };
 
 } // namespace gcl
-
-
-typedef gcl::gthread::runnable      GRunnable;
-typedef gcl::gthread                GThread;
-typedef gcl::gmutex                 GMutex;
-typedef gcl::gcond                  GCondition;
-typedef gcl::grwlock                GRWLock;
-
-constexpr auto gsleep = gcl::sleep;
-constexpr auto gnanosleep = gcl::nanosleep;

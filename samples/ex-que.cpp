@@ -1,122 +1,129 @@
 //
-//		* exque.cpp
+//  * ex-que.cpp
 //
-//		OpenGCL Example: queue operations
-//
-//		Written by Soo-Hyuk Nam.
-//			2001. 1. 9. Tue.
+//  OpenGCL Example: queue operations
 //
 
 #include "gque.h"
 #include <memory.h>
 #include <stdio.h>
 
+using namespace gcl;
+
 typedef struct _vdata {
     unsigned dataSize;
     char buf[16];
 } vdata;
 
-using IQue = gcl::que<int>;
-using VQue = gcl::que<vdata>;
 
-
-void gque_test()
+void que_test()
 {
-    IQue gq(10);
-
-    printf("GQue: capacity=%d entries=%d rooms=%d\n",
-           gq.capacity(), gq.length(), gq.available());
+    queue<int> q(10);
+    printf("q status: capacity=%d entries=%d rooms=%d\n", q.capacity(), q.length(), q.available());
 
     int count = 0;
-    while (!gq.isFull()) {
-        gq.put(&count);
-        printf("%d added, capacity=%d entries=%d rooms=%d\n",
-               count, gq.capacity(), gq.length(), gq.available());
+    while (!q.is_full()) {
+        q.put(count);
+        printf("%d added, capacity=%d entries=%d rooms=%d\n", count, q.capacity(), q.length(), q.available());
         ++count;
     }
-    printf("--> GQue filled.\n\n");
+    printf("--> queue is filled.\n\n");
 
-    int i;
-    for (i = 0; i < 5; ++i) {
+    for (int i=0; i<5; ++i) {
         int val;
-        gq.get(&val);
-        printf("%d poped, capacity=%d entries=%d rooms=%d\n",
-               val, gq.capacity(), gq.length(), gq.available());
+        q.get(val);
+        printf("%d poped, capacity=%d entries=%d rooms=%d\n", val, q.capacity(), q.length(), q.available());
     }
     printf("--> 5 entries were poped.\n\n");
 
-    for (i = 0; i < 5; ++i) {
-        gq.put(&count);
-        printf("%d added, capacity=%d entries=%d rooms=%d\n",
-               count, gq.capacity(), gq.length(), gq.available());
+    for (int i=0; i<5; ++i) {
+        q.put(count);
+        printf("%d added, capacity=%d entries=%d rooms=%d\n", count, q.capacity(), q.length(), q.available());
         count++;
     }
     printf("--> 5 entries were added again.\n\n");
 
-    printf("*----- Full list -----*\n");
+    printf("*----- print queue -----*\n");
+    printf("Total entries=%d\n", q.length());
     count = 0;
-    unsigned entries = gq.length();
-    printf("entries=%d\n", entries);
-    int *pItem = gq.peekNext();
-    while (pItem) {
-        printf("m_q[%d]=%d\n", count++, *pItem);
-        pItem = gq.peekNext(pItem);
+    int *peek = q.peek();
+    while (peek) {
+        printf("q[%d] = %d\n", count++, *peek);
+        peek = q.peek_next(peek);
+    }
+
+    printf("*----- print queue reverse -----*\n");
+    printf("Total entries=%d\n", q.length());
+    count = 0;
+    peek = q.last();
+    while (peek) {
+        printf("q[%d] = %d\n", count++, *peek);
+        peek = q.peek_prev(peek);
     }
 }
 
-
-void gque_running_test()
+void step_test()
 {
-    VQue gq(30);
-    vdata val;
+    //--- inititialize queue entries
+    queue<int> q(10);
+    for (int i=0; i<10; i++) q.put(i);      // add entries
+    for (int i=0; i<5; i++) q.get();        // get half of it
+    for (int i=10; i<15; i++) q.put(i);     // add again
 
-    int loopCount = 30;
-    while (loopCount-- > 0) {
-        for (int i = 0; i < 10; i++) {
-            gq.put(&val);
-            printf("loop=%d put=%d\n", loopCount, i);
-        }
-
-        for (int i = 0; i < 10; i++) {
-            gq.put(&val);
-            printf("loop=%d pop=%d\n", loopCount, i);
-        }
+    int index = 0;
+    int *peek = q.peek();
+    while (peek) {
+        printf("q[%d] = %d\n", index++, *peek);
+        peek = q.peek_next(peek);
     }
-}
-
-void gque_step_test()
-{
-    GQue q(10, sizeof(int));
-    for (int i=0; i<10; i++) q.put(&i);
-    for (int i=0; i<5; i++) q.get();
-    for (int i=10; i<15; i++) q.put(&i);
-
 
     unsigned count = q.length();
-    dmsg("Count=%d ===\n", count);
+    printf("queue stat: length=%d available=%d cpapcity=%d\n", count, q.available(), q.capacity());
+
+    //--- remove entries at even number positions
+    printf("\nNow remove entries at even number positions...\n");
     while (count-- > 0) {
         int val;
-        q.pop(&val);
+        q.pop(val);
         if (val % 2 == 0) {
-            printf("val=%d removed. len=%d\n", val, q.length());
+            printf("val=%d removed. queue lenght=%d\n", val, q.length());
             continue;
         }
-        q.put(&val);
+        q.put(val);
     }
 
-    int *p = (int *)q.peek();
-    dmsg("Que length=%d\n", q.length());
-    void *marker = q.tail();
-    int index = 0;
-    while (p) {
-        printf("index=%i odd val=%d\n", index++, *p);
-        p = (int *)q.peekNext(p);
+    // print queue using peek()
+    index = 0;
+    peek = q.head();
+    while (peek) {
+        printf("q[%d] = %d\n", index++, *peek);
+        peek = q.peek_next(peek);
     }
 }
+
+void running_test()
+{
+    queue<vdata> q(30);
+    vdata val;
+
+    int loop_count = 300;
+    for (int loop=1; loop<=loop_count; loop++) {
+        for (int i=0; i<10; i++) {
+            q.put(val);
+            printf("loop=%d put=%d\n", loop, i);
+        }
+
+        for (int i=0; i<10; i++) {
+            q.get(val);
+            printf("loop=%d pop=%d\n", loop, i);
+        }
+    }
+}
+
 
 int main()
 {
-    gque_step_test();
-    // gque_test();
-    // gque_running_test();
+    que_test();
+//     step_test();
+//     running_test();
 }

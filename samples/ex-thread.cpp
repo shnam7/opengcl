@@ -11,38 +11,49 @@
 //
 
 #include "gthread.h"
-#include "gtimer.h"
+#include "gtime.h"
 #include <stdio.h>
+
+using namespace gcl;
+using namespace gcl::time;
+
+int finished = 0;
 
 void *foo(void *data)
 {
-	int val = (int)(uintptr_t)data;
-	printf( "Starting: arg=%d\n", val );
-    nanotick_t elapsed = 0;
-    for (int i=0; i<10; i++) {
-        nanotick_t tm = GTimer::nanoTicks();
-        gsleep(300);
-        // gnanosleep(500000000);
-        elapsed = GTimer::nanoElapsed(tm);
-		printf( "tid=%d count=%i nanotick=%zu elapsed=%zu\n", val, i, tm, elapsed);
+    thread *th = thread::get_current();
+    unsigned tid = th->thread_id();
+
+    tick_t tm0 = ticks();
+    tick_t elapsed = 0;
+    for (int i=0; i<100; i++)
+    {
+        tick_t tm = ticks();
+        sleep(3);
+        elapsed = elapsed_ticks(tm);
+        printf("tid=#%05d count=%i tick=%zu elapsed=%lu\n", tid, i, tm, ticks_to_msec(elapsed));
     }
-	return 0;
+    printf("--->thread #%05d finished. elapsed=%umsec\n", tid, elapsed_msec(tm0));
+    finished++;
+    return 0;
 }
 
 int main()
 {
-    gcl::gthread t1, t2;
-    t1.start(foo, (void *)1);
-    t2.start(foo, (void *)2);
+    const int TH_MAX = 512;
+    thread th[TH_MAX];
+    for (int i = 0; i < TH_MAX; i++)
+        th[i].start(foo);
 
-	// printf( "Main\n" );
-    // for (int i=0; i<5; i++) {
-    //     printf("main count=%d\n", i);
-    //     gcl::sleep(100);
-    // }
+    // check if main thread is running
+    for (int i=0; i<100; i++) {
+        printf(">>> main thread id=%d count=%d\n", thread::get_current()->thread_id(), i);
+        sleep(3);
+    }
 
-    t1.join();
-    t2.join();
-    printf("End of main\n");
-	return 0;
+    for (int i = 0; i < TH_MAX; i++)
+        th[i].join();
+
+    printf("End of main --- Total %d threads finished\n", finished);
+    return 0;
 }

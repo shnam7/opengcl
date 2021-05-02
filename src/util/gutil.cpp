@@ -1,5 +1,5 @@
 /*
- *	* gutils.c
+ *	* gutil.cpp
  *
  *	OpenGCL Module : gutils - general utilities
  *
@@ -7,7 +7,7 @@
  *		2004. 04. 19. Mon.
  *
  *	History:
- *		2004/04/19: Originally written.
+ *		2004/04/19: First written.
  *
  */
 
@@ -16,6 +16,10 @@
 #include <stdio.h>
 #include <string.h>
 
+
+/**
+ *  Convert a character into 2 bytes hex characters
+ */
 gcl_api void gcl::util::chr2hex(char c, char hex[2])
 {
 	int val = (c >> 4) & 0x0F;

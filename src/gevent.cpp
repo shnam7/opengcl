@@ -1,5 +1,4 @@
 /**
- *  @package Ardukit
  *  @module GEvent
  *
  *  Written by Hyeon-min Lee
@@ -11,80 +10,104 @@
 #include <string.h>
 
 //-----------------------------------------------------------------------------
-//  class GEventQ
-//-----------------------------------------------------------------------------
-gcl_api gcl::GEventQ::GEventQ(const char *eventName, unsigned eventQSize) {
-    strncpy(m_eventName, eventName, MAX_EVENT_NAME_LENGTH);
-    m_eventName[MAX_EVENT_NAME_LENGTH] = 0;
-    reset(eventQSize);
-}
-
-gcl_api bool gcl::GEventQ::addListener(GEvent::Handler handler, void *data,
-                                  unsigned long extraData, bool once)
-{
-    _event_listener entry = {handler, data, extraData, once};
-    return put(&entry);
-}
-
-gcl_api void gcl::GEventQ::removeListener(GEvent::Handler handler) {
-    _lock();
-    _event_listener *ev = (_event_listener *)gque::peek();
-    void *tail_marker = gque::tail();
-    while (ev) {
-        GEvent event = { m_eventName, ev->data, ev->extraData };
-        if (ev->handler == handler) gque::pop();
-        ev = (ev == tail_marker) ? 0 : (_event_listener *)gque::peek();
-    }
-    _unlock();
-}
-
-
-gcl_api void gcl::GEventQ::processEvents() {
-    _lock();
-    _event_listener *ev = (_event_listener *)gque::peek();
-    void *tail_marker = gque::tail();
-    while (ev) {
-        GEvent event = { m_eventName, ev->data, ev->extraData };
-        ev->handler(event);
-        if (!ev->once) gque::pop();
-        ev = (ev == tail_marker) ? 0 : (_event_listener *)gque::peek();
-    }
-    _unlock();
-}
-
-
-//-----------------------------------------------------------------------------
 //  class GEventEmitter
 //-----------------------------------------------------------------------------
-gcl_api void GEventEmitter::_on(const char *eventName, GEvent::Handler handler,
-                        void *data, unsigned long extraData, bool once)
+bool gcl::event_emitter::off(const char *event_name, event_handler handler)
 {
-    GEventQ *eQ = _findEventQ(eventName);
-    if (!eQ) {
-        eQ = new GEventQ(eventName, m_eqSize);
-        if (!eQ) throw "GEventEmitter::_on:memory allocation failure.";
-        m_eqList.append(eQ);
+    const char *name = _unregister_event_name(event_name);
+    if (!name) return false;
+
+    // erase relevant event handlers
+    int len = m_event_handler_que.length();
+    while (len-- > 0) {
+        event_handler_block hb;
+        m_event_handler_que.get(hb);
+        if (hb.name==name && hb.handler==handler) continue;  // remove from the que
+        m_event_handler_que.put(hb);    // put back to the que
     }
-    eQ->addListener(handler, data, extraData, once);
+    return true;
 }
 
-gcl_api void GEventEmitter::off(const char *eventName, GEvent::Handler handler)
+bool gcl::event_emitter::emit(const char *event_name)
 {
-    GEventQ *evQ = _findEventQ(eventName);
-    if (evQ) evQ->removeListener(handler);
+    const char *name = _find_event_name(event_name);
+    if (!name) return false;
+
+    int len = m_event_handler_que.length();
+    while (len-- > 0) {
+        event_handler_block hb;
+        m_event_handler_que.get(hb);
+        if (hb.name == name) {
+            hb.handler(hb);     // call handler function
+            if (hb.once) continue;  // if once, then do not put back to the quw
+        }
+        m_event_handler_que.put(hb);    // put back to the que
+    }
+    return true;
 }
 
-gcl_api void GEventEmitter::emit(const char *eventName) {
-    GEventQ *evQ = (GEventQ *)_findEventQ(eventName);
-    if (evQ) evQ->processEvents();
+bool gcl::event_emitter::_on(const char *event_name, event_handler handler,
+        void *data, u64_t data_ex, bool once)
+{
+    if (strlen(event_name) > GEVENT_NAME_LENGTH_MAXIMUM) {
+        dmsg("event_emitter::_on: event_name is too long. max length=%d\n",
+            GEVENT_NAME_LENGTH_MAXIMUM);
+        return false;
+    }
+
+    const char *name = _register_event_name(event_name);
+    if (!name) {
+        dmsg("event_emitter::_on: register_event_name failed\n");
+        return false;
+    }
+
+    _event_handler_block entry = { name, handler, data, data_ex, once };
+    return m_event_handler_que.put(entry);
 }
 
+const char *gcl::event_emitter::_find_event_name(const char *event_name)
+{
+    event_name_t *peek = m_event_name_que.peek();
+    while (peek) {
+        if (strcmp(peek->name, event_name) == 0) return peek->name;
+        peek = m_event_name_que.peek_next(peek);
+    }
+    return 0;
+}
 
-gcl_api gcl::GEventQ *GEventEmitter::_findEventQ(const char *eventName) {
-    GEventQ *evQ = m_eqList.first();
-    while (evQ) {
-        if (strcmp(evQ->eventName(), eventName) == 0) return evQ;
-        evQ = m_eqList.nextOf(evQ);
+const char *gcl::event_emitter::_register_event_name(const char *event_name)
+{
+    const char *name = _find_event_name(event_name);
+    if (name) return name;  // already registered
+
+    // find empty slot first
+    event_name_t *peek = m_event_name_que.peek();
+    while (peek) {
+        if (strlen(peek->name) == 0) {
+            strncpy(peek->name, event_name, GEVENT_NAME_LENGTH_MAXIMUM);
+            peek->name[GEVENT_NAME_LENGTH_MAXIMUM] = 0;
+            return peek->name;
+        }
+        peek = m_event_name_que.peek_next(peek);
+    }
+
+    // if no empty slot, then add too queue
+    event_name_t entry;
+    strncpy(entry.name, event_name, GEVENT_NAME_LENGTH_MAXIMUM);
+    entry.name[GEVENT_NAME_LENGTH_MAXIMUM] = 0;
+
+    return m_event_name_que.put(entry) ? m_event_name_que.last()->name : 0;
+}
+
+const char *gcl::event_emitter::_unregister_event_name(const char *event_name)
+{
+    event_name_t *peek = m_event_name_que.peek();
+    while (peek) {
+        if (strcmp(peek->name, event_name) == 0) {
+            peek->name[0] = 0;
+            return peek->name;
+        }
+        peek = m_event_name_que.peek_next(peek);
     }
     return 0;
 }
