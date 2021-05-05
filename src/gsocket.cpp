@@ -35,8 +35,8 @@ using namespace gcl::time;
 socket_t gsock_create_socket(int type, unsigned long nbio)
 {
     socket_t sock = socket(AF_INET, type, 0);
-    if (sock == INVALID_SOCKET) return -1;
-    if (nbio && ioctl(sock, FIONBIO, &nbio) != 0) return -1;
+    if (sock == INVALID_SOCKET) return INVALID_SOCKET;
+    if (nbio && ioctl(sock, FIONBIO, &nbio) != 0) return INVALID_SOCKET;
     return sock;
 }
 

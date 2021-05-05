@@ -25,7 +25,7 @@ namespace gcl
 gcl_api void dmsg(const char *fmt, ...);
 
 #else
-inline void dmsg(const char *fmt, ...) {}
+inline void dmsg(const char *, ...) {}
 #endif
 } // namespace gcl
 

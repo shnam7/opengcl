@@ -23,15 +23,15 @@
 gcl_api void gcl::util::chr2hex(char c, char hex[2])
 {
 	int val = (c >> 4) & 0x0F;
-	hex[0] = ((val < 10) ? '0' : 'A'-10 ) + val;
+	hex[0] = (char)(((val < 10) ? '0' : 'A'-10 ) + val);
 	val = c & 0x0F;
-	hex[1] = ((val < 10) ? '0' : 'A'-10 ) + val;
+	hex[1] = (char)(((val < 10) ? '0' : 'A'-10 ) + val);
 }
 
 // convert hex char to its hex value: ex)'A'-->10, 'B'-->11 etc
 char gcl::util::hexval(char hexchar)
 {
-	hexchar = toupper(hexchar);
+	hexchar = (char)toupper(hexchar);
 	if ( hexchar>='0' && hexchar<='9' )
 		return hexchar - '0';
 	if ( hexchar>='A' && hexchar<='F' )

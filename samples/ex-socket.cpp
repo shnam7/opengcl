@@ -14,7 +14,7 @@
 
 using namespace gcl;
 
-#if !defined( _WIN32 )
+#ifndef _WIN32
 #include <arpa/inet.h>
 #include <unistd.h>
 #endif
@@ -73,7 +73,7 @@ void _server()
 
 	while ( 1 )
 	{
-		int r = gsListener.check_readable( 10 );
+		r = gsListener.check_readable( 10 );
 		if ( r < 0 ) break;		// error
 		if ( r== 0 ) continue;
 		sockaddr_in sa;
@@ -160,7 +160,7 @@ void _client()
 	}
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *[])
 {
 	/*
 	ipaddr_t addr = gsock_hostaddr("empas.com");

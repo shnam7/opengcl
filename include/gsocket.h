@@ -251,7 +251,7 @@ public:
 
 public:
 	//--- creators
-	gsocket() : m_sock(-1) {}
+	gsocket() : m_sock(INVALID_SOCKET) {}
 	gsocket(socket_t sock) : m_sock(sock) {}
 	~gsocket() { close_socket(); }
 
@@ -342,7 +342,7 @@ public:
 	bool setopt_reuse_addr(bool reuse)
 		{ return gsock_setopt_reuse_addr(m_sock, (int)reuse) != 0; }
 
-	bool is_valid() const { return m_sock != (socket_t)-1; }
+	bool is_valid() const { return m_sock != INVALID_SOCKET; }
 
 	socket_t get_socket() const { return m_sock; }
 

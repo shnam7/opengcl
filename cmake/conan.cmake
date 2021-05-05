@@ -1,5 +1,3 @@
-# install external libraries using conan: pthreads4w
-
 # Download conan.cmake file
 # ref: https://github.com/conan-io/cmake-conan
 # ref: https://docs.conan.io/en/latest/howtos/cmake_launch.html

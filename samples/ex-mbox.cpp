@@ -29,7 +29,6 @@ void *foo_put(void *data)
         }
 		msleep(0);
 	}
-	return 0;
 }
 
 void *foo_get(void *data)
@@ -47,7 +46,6 @@ void *foo_get(void *data)
         }
 		msleep(0);
 	}
-	return 0;
 }
 
 int main()

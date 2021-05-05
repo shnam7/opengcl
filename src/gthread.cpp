@@ -62,7 +62,7 @@ thread::thread() {
         // pthread_key_create(&__key_to_instance, __thread_destructor);
         __main_thread.m_t = pthread_self();
         __main_thread.m_tid = 0;
-        int err = pthread_setspecific(__key_to_instance, &__main_thread);
+        pthread_setspecific(__key_to_instance, &__main_thread);
     }
 }
 

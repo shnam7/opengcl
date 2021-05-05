@@ -1,37 +1,67 @@
-cmake_minimum_required(VERSION 3.10.2)
-project(OpenGCL VERSION 1.0.0)
+#--- check build type
+cmake_minimum_required(VERSION 3.10)
+project(opengcl VERSION 1.0.0)
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-set(EXCLUDE_DIR __trash)
 
-#--- Compiler options
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+#--- check buil type
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug, Release, or MinSizeRel." FORCE)
+    message(STATUS "No build type specified, defaulting to MinSizeRel.")
+endif()
 
-add_compile_options($<$<CONFIG:DEBUG>:-Wall>)     # -fomit-frame-pointer
-add_compile_definitions($<$<CONFIG:DEBUG>:_DEBUG>)
-add_compile_definitions($<$<BOOL:WIN32>:GCL_EXPORTS>)
-add_compile_definitions($<$<BOOL:MINGW>:__USE_MINGW_ANSI_STDIO>)   # fix printf format string warnings
-add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
-add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:_WINSOCK_DEPRECATED_NO_WARNINGS>)
+#--- check target architecture
+if(NOT TARGET_ARCH)
+    set(TARGET_ARCH "x86_64" CACHE STRING "Choose target architecture, options are: x86, x86_64..." FORCE)
+    message(STATUS "No build type specified, defaulting to MinSizeRel.")
+endif()
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+if(${TARGET_ARCH} STREQUAL "x64")
+    set(TARGET_ARCH "x86_64" CACHE STRING "Choose target architecture, options are: x86, x86_64..." FORCE)
+endif()
 
+#--- check system information
+message(STATUS "Generator ......... ${CMAKE_GENERATOR}")
+message(STATUS "Build Type ........ ${CMAKE_BUILD_TYPE}")
+message(STATUS "Target Arch ....... ${TARGET_ARCH}")
 if(MSVC)
-#     message(STATUS "MSVC Version ...... ${MSVC_VERSION}")
-#     message(STATUS "Installing external libraries using conan ......>>>>>")
-#     # add_compile_options(
-#     #     $<$<CONFIG:>:/MD> #---------|
-#     #     $<$<CONFIG:Debug>:/MDd> #---|-- Statically link the runtime libraries
-#     #     $<$<CONFIG:Release>:/MD> #--|
-#     # )
-    include(pthread)      # install external libs (pthreads4w,)
-else()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+    message(STATUS "MSVC Version ...... ${MSVC_VERSION}")
+    include(install_pthread)      # download pthread4w library
 endif()
 
 
-include_directories(include build/include)
+#------------------------------------------------------------------------------
+# opengcl library
+#------------------------------------------------------------------------------
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+include_directories(include)
+
+
+#--- Compiler settings
+add_compile_definitions($<$<BOOL:WIN32>:GCL_EXPORTS>)
+add_compile_definitions($<$<BOOL:MINGW>:__USE_MINGW_ANSI_STDIO>)   # fix printf format string warnings
+add_compile_definitions($<$<BOOL:MSVC>:_CRT_SECURE_NO_WARNINGS>)
+add_compile_definitions($<$<BOOL:MSVC>:_WINSOCK_DEPRECATED_NO_WARNINGS>)
+if (BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DEBUG _DEBUG)
+endif()
+
+if(MSVC)
+    # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /errorReport:none /nologo ")
+    add_compile_options(
+        /W4 /WX
+        /errorReport:none /nologo
+    )
+else()
+    add_compile_options(
+        -fPIC
+        -Wall -pedantic -Werror
+    )
+endif()
 
 
 #------------------------------------------------------------------------------
@@ -54,52 +84,12 @@ set (SRC
 )
 
 #--- Build opengcl library
-add_library(opengcl SHARED ${SRC})
-target_link_libraries(opengcl ${CONAN_LIBS})
+add_library(${PROJECT_NAME} SHARED ${SRC})
+target_link_libraries(${PROJECT_NAME} ${CONAN_LIBS})
 if (WIN32)
-    target_link_libraries(opengcl wsock32 ws2_32)
+    target_link_libraries(${PROJECT_NAME} wsock32 ws2_32)
 else()
-    target_link_libraries(opengcl pthread)
+    target_link_libraries(${PROJECT_NAME} pthread)
 endif()
 
-
-#------------------------------------------------------------------------------
-# samples programs
-#------------------------------------------------------------------------------
-set(SAMPLES
-	samples/ex-time.cpp
-    samples/ex-list.cpp
-	samples/ex-que.cpp
-	samples/ex-mmap.cpp
-	samples/ex-tok.cpp
-	samples/ex-sem.cpp
-	samples/ex-thread.cpp
-	samples/ex-pthread.cpp
-	samples/ex-mbox.cpp
-	samples/ex-event.cpp
-	samples/ex-socket.cpp
-)
-
-#--- Build samples
-set(sampleTargetNames)	# list of sample program names
-set(LIBS opengcl ${CONAN_LIBS})
-
-macro(add_example pathName)
-	get_filename_component(fileName  ${pathName} NAME)	# file name without path
-	get_filename_component(name  ${fileName} NAME_WE)	# file name without extension
-
-	# message("Build ${name} from ${fileName}....")
-	add_executable(${name} samples/${fileName})
-	target_compile_definitions(${name} PUBLIC _REENTRANT)
-    target_link_libraries(${name} ${LIBS})
-	# set_target_properties(${name} PROPERTIES EXCLUDE_FROM_ALL 1)
-
-	list(APPEND sampleTargetNames ${name})
-endmacro(add_example)
-
-
-foreach(exFile ${SAMPLES})
-	add_example(${exName} ${exFile})
-endforeach(exFile ${SAMPLES})
-
-add_custom_target(samples DEPENDS ${sampleTargetNames})
+add_subdirectory(samples)

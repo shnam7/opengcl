@@ -23,7 +23,7 @@ public:
     }
 };
 
-void event_handler(event_emitter::event &ev)
+void event_handler(event_emitter::event &)
 {
     printf("'suspend' event listener...called\n");
 }

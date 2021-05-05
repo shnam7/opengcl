@@ -23,11 +23,9 @@ using namespace gcl::time;
 
 
 static int finished = 0;
-static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 
 void *foo(void *data)
 {
-    pthread_t th = pthread_self();
     int tid = (int)(uintptr_t)data;
     printf("--- Starting: thread #%d\n", tid);
     tick_t tm0 = ticks();
@@ -37,9 +35,9 @@ void *foo(void *data)
         tick_t tm = ticks();
         msleep(3);
         elapsed = elapsed_ticks(tm);
-        printf("tid=%u count=%i tick=%zu elapsed=%lu\n", tid, i, tm, ticks_to_msec(elapsed));
+        printf("tid=%u count=%i tick=%zu elapsed=%u\n", tid, i, tm, ticks_to_msec(elapsed));
     }
-    printf("--->thread #%03d finished. elapsed=%umsec\n", tid, elapsed_msec(tm0));
+    printf("--->thread #%03d finished. elapsed=%u(msec)\n", tid, elapsed_msec(tm0));
 
     finished++;
     return 0;
