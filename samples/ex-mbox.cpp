@@ -27,7 +27,7 @@ void *foo_put(void *data)
 		if ( mbox.put(msg) ) {
             printf( "putter:%s qsize=%d\n", msg.msg, mbox.length() );
         }
-		sleep(0);
+		msleep(0);
 	}
 	return 0;
 }
@@ -45,7 +45,7 @@ void *foo_get(void *data)
 		if ( mbox.get(&msg) ) {
             printf( "getter:%s qsize=%d\n", msg.msg, mbox.length() );
         }
-		sleep(0);
+		msleep(0);
 	}
 	return 0;
 }
@@ -64,7 +64,7 @@ int main()
 	}
 
     tick_t tm1 = ticks();
-    sleep(5000);
+    msleep(5000);
     tick_t elapsed = elapsed_nsec(tm1);
     printf("------------------------------TIMEOUT------------------\n");
     printf("elapsed=%zu\n", elapsed);

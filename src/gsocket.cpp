@@ -26,7 +26,7 @@
 
 #define __err errno
 
-inline int closesocket(socket_t sock) { ::close(sock); }
+inline int closesocket(socket_t sock) { return ::close(sock); }
 #endif
 
 using namespace gcl;
@@ -250,31 +250,31 @@ ipaddr_t gsock_hostaddr(const char *hostname)
 //--------------------------------------------------------------------
 bool gcl::gsocket::create_socket(int type, unsigned long nbio)
 {
-    if (m_sock != (socket_t)-1) closesocket(m_sock);
+    if (m_sock != INVALID_SOCKET) closesocket(m_sock);
     m_sock = ::socket(AF_INET, type, 0);
-    if (m_sock == (socket_t)-1) return 0;
+    if (m_sock == INVALID_SOCKET) return 0;
     return (nbio) ? ioctl(m_sock, FIONBIO, &nbio) == 0 : true;
 }
 
 bool gcl::gsocket::close_socket()
 {
-    if (m_sock == (socket_t)-1) return false;
+    if (m_sock == INVALID_SOCKET) return false;
     if (closesocket(m_sock) != 0) return false;
-    m_sock = -1;
+    m_sock = INVALID_SOCKET;
     return true;
 }
 
 bool gcl::gsocket::attach(socket_t sock)
 {
-    if (sock == (socket_t)-1) return false;
+    if (sock == INVALID_SOCKET) return false;
     if (m_sock == sock) return true;
-    if (m_sock != (socket_t)-1) closesocket(m_sock);
+    if (m_sock != INVALID_SOCKET) closesocket(m_sock);
     m_sock = sock;
     return true;
 }
 
 bool gcl::gsocket::detach()
 {
-    m_sock = -1;
+    m_sock = INVALID_SOCKET;
     return true;
 }

@@ -104,15 +104,15 @@ class gcl_api queue_mt : protected queue<T> {
 
 public:
     queue_mt() {}
-    queue_mt(unsigned capacity): queue(capacity) {}
+    queue_mt(unsigned capacity): queue<T>(capacity) {}
 
-    bool init(unsigned capacity) { autolock_wr lock(m_lock); return queue::init(capacity, sizeof(T)); };
-    void clear() const { autolock_wr lock(m_lock); queue::clear(); }
+    bool init(unsigned capacity) { autolock_wr lock(m_lock); return queue<T>::init(capacity, sizeof(T)); };
+    void clear() const { autolock_wr lock(m_lock); queue<T>::clear(); }
 
-    bool put(const T *item) { autolock_wr lock(m_lock); return queue::put(item); }
-    bool get(T *item=0) { autolock_wr lock(m_lock); return queue::get(item); }
-    bool push(const T *item) { autolock_wr lock(m_lock); return queue::push(item); }
-	bool pop(T *item=0) { autolock_wr lock(m_lock); return queue::get(item); };
+    bool put(const T *item) { autolock_wr lock(m_lock); return queue<T>::put(item); }
+    bool get(T *item=0) { autolock_wr lock(m_lock); return queue<T>::get(item); }
+    bool push(const T *item) { autolock_wr lock(m_lock); return queue<T>::push(item); }
+	bool pop(T *item=0) { autolock_wr lock(m_lock); return queue<T>::get(item); };
 
     //--- support reference type interface
     bool put(const T &item) { return put(&item); }
@@ -121,13 +121,13 @@ public:
 	bool pop(T &item) { return pop(&item); }
 
 	//--- accessors
-	unsigned item_size() { return autolock_rd lock(m_lock); return queue::item_size() }
+	unsigned item_size() { autolock_rd lock(m_lock); return queue<T>::item_size(); }
 
-    bool is_empty() { autolock_rd lock(m_lock); return queue::is_empty(); }
-    bool is_full() { autolock_rd lock(m_lock); return queue::is_full(); }
-	unsigned length() { autolock_rd lock(m_lock); return queue::length(); }
-    unsigned available() { autolock_rd lock(m_lock); return queue::available(); }
-    unsigned capacity() { autolock_rd lock(m_lock); return queue::capacity(); }
+    bool is_empty() { autolock_rd lock(m_lock); return queue<T>::is_empty(); }
+    bool is_full() { autolock_rd lock(m_lock); return queue<T>::is_full(); }
+	unsigned length() { autolock_rd lock(m_lock); return queue<T>::length(); }
+    unsigned available() { autolock_rd lock(m_lock); return queue<T>::available(); }
+    unsigned capacity() { autolock_rd lock(m_lock); return queue<T>::capacity(); }
 };
 
 } // namespace gcl

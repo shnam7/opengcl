@@ -14,7 +14,8 @@
 //-----------------------------------------------------------------------------
 bool gcl::event_emitter::off(const char *event_name, event_handler handler)
 {
-    const char *name = _unregister_event_name(event_name);
+    autolock_wr lock(m_lock);
+    const char *name = __unregister_event_name(event_name);
     if (!name) return false;
 
     // erase relevant event handlers
@@ -30,7 +31,8 @@ bool gcl::event_emitter::off(const char *event_name, event_handler handler)
 
 bool gcl::event_emitter::emit(const char *event_name)
 {
-    const char *name = _find_event_name(event_name);
+    autolock_wr lock(m_lock);
+    const char *name = __find_event_name(event_name);
     if (!name) return false;
 
     int len = m_event_handler_que.length();
@@ -55,7 +57,8 @@ bool gcl::event_emitter::_on(const char *event_name, event_handler handler,
         return false;
     }
 
-    const char *name = _register_event_name(event_name);
+    autolock_wr lock(m_lock);
+    const char *name = __register_event_name(event_name);
     if (!name) {
         dmsg("event_emitter::_on: register_event_name failed\n");
         return false;
@@ -65,7 +68,7 @@ bool gcl::event_emitter::_on(const char *event_name, event_handler handler,
     return m_event_handler_que.put(entry);
 }
 
-const char *gcl::event_emitter::_find_event_name(const char *event_name)
+const char *gcl::event_emitter::__find_event_name(const char *event_name)
 {
     event_name_t *peek = m_event_name_que.peek();
     while (peek) {
@@ -75,9 +78,9 @@ const char *gcl::event_emitter::_find_event_name(const char *event_name)
     return 0;
 }
 
-const char *gcl::event_emitter::_register_event_name(const char *event_name)
+const char *gcl::event_emitter::__register_event_name(const char *event_name)
 {
-    const char *name = _find_event_name(event_name);
+    const char *name = __find_event_name(event_name);
     if (name) return name;  // already registered
 
     // find empty slot first
@@ -99,7 +102,7 @@ const char *gcl::event_emitter::_register_event_name(const char *event_name)
     return m_event_name_que.put(entry) ? m_event_name_que.last()->name : 0;
 }
 
-const char *gcl::event_emitter::_unregister_event_name(const char *event_name)
+const char *gcl::event_emitter::__unregister_event_name(const char *event_name)
 {
     event_name_t *peek = m_event_name_que.peek();
     while (peek) {

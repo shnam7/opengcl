@@ -44,10 +44,10 @@ static void *_serv_d(void *data)
 		if ( gs.write(buf, slen, 1000) != slen ) break;
 //		if ( gs.send(buf, slen) != slen ) break;
 //		if ( ::send( gs.getSocket(), buf, slen, MSG_DONTWAIT )!=slen) break;
-		printf( "send=<%s>", buf  );
+		// printf( "send=<%s>", buf  );
 	}
+	printf( "closing socket #%d\n", (int)gs.get_socket());
 	gs.close_socket();
-	printf( "connection closed\n" );
 	delete th;
 	return 0;
 }
@@ -78,9 +78,12 @@ void _server()
 		if ( r== 0 ) continue;
 		sockaddr_in sa;
 		socket_t sock = gsListener.accept( &sa );
-		printf( "r=%d sock=%d\n", r, (int)sock );
-		if ( sock == INVALID_SOCKET ) continue;
-		printf( "client from %s accepted.\n", inet_ntoa(sa.sin_addr) );
+		// printf( "r=%d sock=%d\n", r, (int)sock );
+		if ( sock == INVALID_SOCKET ) {
+            printf( "invalid socket for client %s\n", inet_ntoa(sa.sin_addr) );
+            continue;
+        }
+		printf( "client from %s accepted: socket=%d readable=%d.\n", inet_ntoa(sa.sin_addr), (int)sock, r);
 
 		thread *th = new thread();
 		th->start( _serv_d, (void *)&sock );

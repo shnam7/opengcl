@@ -4,37 +4,40 @@ project(OpenGCL VERSION 1.0.0)
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(EXCLUDE_DIR __trash)
 
-if(MSVC)
-    message(STATUS "MSVC Version ...... ${MSVC_VERSION}")
-    message(STATUS "Installing external libraries using conan ......>>>>>")
-
-    add_compile_options(
-        $<$<CONFIG:>:/MD> #---------|
-        $<$<CONFIG:Debug>:/MDd> #---|-- Statically link the runtime libraries
-        $<$<CONFIG:Release>:/MD> #--|
-    )
-
-    include(conan)
-endif()
-
 #--- Compiler options
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
-# ref: cmake generator expression
-# add_compile_options($<$<CONFIG:DEBUG>:-Wall>)     # -fomit-frame-pointer
+add_compile_options($<$<CONFIG:DEBUG>:-Wall>)     # -fomit-frame-pointer
 add_compile_definitions($<$<CONFIG:DEBUG>:_DEBUG>)
 add_compile_definitions($<$<BOOL:WIN32>:GCL_EXPORTS>)
 add_compile_definitions($<$<BOOL:MINGW>:__USE_MINGW_ANSI_STDIO>)   # fix printf format string warnings
 add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>)
 add_compile_definitions($<$<CXX_COMPILER_ID:MSVC>:_WINSOCK_DEPRECATED_NO_WARNINGS>)
 
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
-include_directories(include src/gthread/include)
+if(MSVC)
+#     message(STATUS "MSVC Version ...... ${MSVC_VERSION}")
+#     message(STATUS "Installing external libraries using conan ......>>>>>")
+#     # add_compile_options(
+#     #     $<$<CONFIG:>:/MD> #---------|
+#     #     $<$<CONFIG:Debug>:/MDd> #---|-- Statically link the runtime libraries
+#     #     $<$<CONFIG:Release>:/MD> #--|
+#     # )
+    include(pthread)      # install external libs (pthreads4w,)
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif()
 
-#--- source files
-set (SRC_COMMON
+
+include_directories(include build/include)
+
+
+#------------------------------------------------------------------------------
+# opengcl library
+#------------------------------------------------------------------------------
+set (SRC
     src/gque.cpp
     src/glist.cpp
 	src/gmmap.cpp
@@ -43,17 +46,26 @@ set (SRC_COMMON
 	src/gthread.cpp
     src/gevent.cpp
 	src/gtime.cpp
+    src/gtime_sleep.cpp
 	src/util/gutil.cpp
 	src/util/filelength.cpp
     $<$<CONFIG:DEBUG>:src/gdmsg.cpp>
+    $<$<CONFIG:WIN32>:src/win32/opengcl_dll.cpp>
 )
 
-set (SRC_WIN32
-    src/win32/gtime_sleep.cpp
-    src/win32/opengcl_dll.cpp
-)
+#--- Build opengcl library
+add_library(opengcl SHARED ${SRC})
+target_link_libraries(opengcl ${CONAN_LIBS})
+if (WIN32)
+    target_link_libraries(opengcl wsock32 ws2_32)
+else()
+    target_link_libraries(opengcl pthread)
+endif()
 
-# samples source
+
+#------------------------------------------------------------------------------
+# samples programs
+#------------------------------------------------------------------------------
 set(SAMPLES
 	samples/ex-time.cpp
     samples/ex-list.cpp
@@ -68,24 +80,9 @@ set(SAMPLES
 	samples/ex-socket.cpp
 )
 
-set (SRC ${SRC_COMMON})
-if (WIN32)  # NOT for CYGWIN
-    list(APPEND SRC ${SRC_WIN32} )
-    # include_directories(src/win32/posix)
-endif()
-
-
-#--- Build opengcl library
-add_library(opengcl SHARED ${SRC})
-if(WIN32)
-    target_link_libraries(opengcl wsock32 ws2_32 ${CONAN_LIBS})
-else()
-    # target_link_libraries(pthread)
-endif()
-
-
 #--- Build samples
 set(sampleTargetNames)	# list of sample program names
+set(LIBS opengcl ${CONAN_LIBS})
 
 macro(add_example pathName)
 	get_filename_component(fileName  ${pathName} NAME)	# file name without path
@@ -94,15 +91,12 @@ macro(add_example pathName)
 	# message("Build ${name} from ${fileName}....")
 	add_executable(${name} samples/${fileName})
 	target_compile_definitions(${name} PUBLIC _REENTRANT)
-    target_link_libraries(${name} opengcl)
-    if(NOT WIN32 AND NOT MINGW)
-        target_link_libraries(${name} pthread)
-    endif()
-
+    target_link_libraries(${name} ${LIBS})
 	# set_target_properties(${name} PROPERTIES EXCLUDE_FROM_ALL 1)
 
 	list(APPEND sampleTargetNames ${name})
 endmacro(add_example)
+
 
 foreach(exFile ${SAMPLES})
 	add_example(${exName} ${exFile})

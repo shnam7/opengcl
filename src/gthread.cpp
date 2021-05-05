@@ -1,4 +1,5 @@
 #include "gthread.h"
+#include <semaphore.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -8,29 +9,33 @@
 #define ERROR_INVALID_HANDLE EINVAL
 #include <errno.h>
 #endif
-#include <semaphore.h>
 
 using gcl::runnable;
 using gcl::thread;
 
-//--------------------------------------------------------------------
-//	class thread
-//--------------------------------------------------------------------
 struct __thread_wrapper_data {
-    gcl::thread         *instance;
-    gcl::runnable       *pRunnable;
+    thread         *instance;
+    runnable       *pRunnable;
     void                *(*proc)(void *);
     void                *data;
     sem_t               *sem;   // signaling completion of thread creation
 };
 
-static struct __thread_wrapper_data __thread_wrapper_args;
+static pthread_key_t   __key_to_instance;
+static unsigned        __instance_count = 0;
+static thread          __main_thread;
 
-pthread_key_t   gcl::thread::__key_to_instance;
-unsigned        gcl::thread::__instance_count = 0;
-thread          __main_thread;
+void thread::__thread_destructor(void *data) {
 
-void *gcl::thread::__thread_wrapper(void *data)
+    // dmsg("---thread #%d terminated\n", ((thread *)data)->m_tid);
+    ((thread *)data)->m_tid = (unsigned)(-1);
+    if (--__instance_count == 0) {
+        pthread_key_delete(__key_to_instance);
+        __key_to_instance = 0;
+    }
+}
+
+void *thread::__thread_wrapper(void *data)
 {
     struct __thread_wrapper_data args = *(struct __thread_wrapper_data *)data;
     pthread_setspecific(__key_to_instance, args.instance);
@@ -38,32 +43,34 @@ void *gcl::thread::__thread_wrapper(void *data)
     sem_post(args.sem);
     // dmsg("---thread #%d started\n", __instance_count);
 
-    if (args.pRunnable) return args.pRunnable->run();
-    if (args.proc) return args.proc(args.data);
-    return 0;
+    pthread_cleanup_push(__thread_destructor, args.instance);
+    data = args.pRunnable ? args.pRunnable->run() : args.proc ? args.proc(args.data) : 0;
+    pthread_testcancel(); // call one of cancellation points to support slef-cancelling (cancel by current thread)
+    pthread_cleanup_pop(1);
+    return data;
+
 }
 
-void gcl::thread::__thread_destructor(void *data) {
 
-    // dmsg("---thread #%d terminated\n", ((gcl::thread *)data)->m_tid);
-    ((gcl::thread *)data)->m_tid = (unsigned)(-1);
-    if (--__instance_count == 0) pthread_key_delete(__key_to_instance);
-}
-
-gcl::thread::thread() {
+//--------------------------------------------------------------------
+//	class thread
+//--------------------------------------------------------------------
+thread::thread() {
+    // if (__instance_count == 0
     if (__instance_count == 0) {
-        pthread_key_create(&__key_to_instance, __thread_destructor);
+        pthread_key_create(&__key_to_instance, 0);
+        // pthread_key_create(&__key_to_instance, __thread_destructor);
         __main_thread.m_t = pthread_self();
         __main_thread.m_tid = 0;
         int err = pthread_setspecific(__key_to_instance, &__main_thread);
     }
 }
 
-gcl::thread::~thread() {
+thread::~thread() {
     stop();
 }
 
-gcl_api int gcl::thread::start(void *(*proc)(void *), void *data, pthread_attr_t *attr)
+gcl_api int thread::start(void *(*proc)(void *), void *data, pthread_attr_t *attr)
 {
     if (is_running()) return EINVAL;
 
@@ -75,7 +82,7 @@ gcl_api int gcl::thread::start(void *(*proc)(void *), void *data, pthread_attr_t
     return err;
 }
 
-gcl_api int gcl::thread::start(runnable *runnable, pthread_attr_t *attr)
+gcl_api int thread::start(runnable *runnable, pthread_attr_t *attr)
 {
     if (is_running()) return EINVAL;
 
@@ -87,24 +94,35 @@ gcl_api int gcl::thread::start(runnable *runnable, pthread_attr_t *attr)
     return err;
 }
 
-gcl_api int gcl::thread::stop(void *retval)
+gcl_api int thread::stop(void *retval)
 {
     if (is_running()) {
         // if stoppinig other thread, then cancel it
         thread *current = get_current();
         if (current != this) {
+            // dmsg("EQUAL=%d %p %p\n", pthread_equal(pthread_self(), m_t), current, this);
             int err = pthread_cancel(m_t);
             if (!err) err = pthread_join(m_t, &retval);
             return err;
         }
 
-        // if stopping current thread, then exit if it's not main thread
-        if (current != &__main_thread) pthread_exit(retval);
+        // if stoppinig current thread, cancel it and do not join
+        // if (current != &__main_thread) --> main thread can also cencel itself
+        int oldstat;
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, &oldstat);    // POSIX.1 could require oldstat param
+        pthread_cancel(m_t);
     }
     return 0;
 }
 
-gcl::thread *gcl::thread::get_current()
+thread *thread::get_current()
 {
-    return (gcl::thread *)pthread_getspecific(__key_to_instance);
+    // if __instance_count==0, __key_to_instance is invalid
+    return __instance_count==0 ? &__main_thread
+        : (thread *)pthread_getspecific(__key_to_instance);
+}
+
+unsigned thread::get_thread_counts()
+{
+    return __instance_count;
 }

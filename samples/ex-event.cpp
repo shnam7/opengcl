@@ -9,25 +9,6 @@
 using namespace gcl;
 using namespace gcl::time;
 
-// class Runner : public runnable, public GEventEmitter {
-// public:
-//     void *run()
-//     {
-//         dmsg("starting runner...\n");
-//         while (true) {
-//             printf("emiting suspend\n");
-//             emit("suspend");
-//             sleep(100);
-//         }
-//         return 0;
-//     }
-// };
-
-// void eventHandler(GEvent &e)
-// {
-//     printf("suspend listener...called\n");
-// }
-
 class Runner : public runnable, public event_emitter {
 public:
     void *run()
@@ -36,7 +17,7 @@ public:
         while (true) {
             printf("emiting 'suspend' event.\n");
             emit("suspend");
-            sleep(100);
+            msleep(10);
         }
         return 0;
     }
@@ -51,15 +32,17 @@ int main()
 {
     thread t1;
     Runner runner;
-    runner.once("suspend", event_handler, &t1);
+    runner.on("suspend", event_handler, &t1);
 
     t1.start(runner);
-    dmsg("main thread is now to sleep for 1 sec...\n");
-    sleep(2000);
-    dmsg("main thread is now cancelling the runner thread...");
-    t1.cancel();
+    msleep(500);
 
-    dmsg("and waiting for the runner to stop...\n");
+    dmsg("\n--- Turning off the 'suspend' event handler.\n");
+    runner.off("suspend", event_handler);
+    msleep(500);
+
+    dmsg("\n--- Cancelling the runner thread...\n");
+    t1.cancel();
     t1.join();
     printf("END of main.\n");
     return 0;

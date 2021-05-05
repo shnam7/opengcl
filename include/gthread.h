@@ -49,13 +49,13 @@ protected:
     u32_t           m_tid = (unsigned)(-1);     // thread id
 
 protected:
-    static pthread_key_t    __key_to_instance;  // key to store pointer to thread object
-    static unsigned         __instance_count;   // # of active thread instances
-    static void *__thread_wrapper(void *);
     static void __thread_destructor(void *);
+    static void *__thread_wrapper(void *);
 
 public:
     thread();
+    thread(void *(*proc)(void *), void *data=0, pthread_attr_t *attr=0) { start(proc, data, attr); }
+    thread(runnable *runnable, pthread_attr_t *attr=0) { start(runnable, attr); }
     ~thread();
 
     //--- manipulators
@@ -64,13 +64,14 @@ public:
     int start(void *(*proc)(void *), void *data=0, pthread_attr_t *attr=0);
 
     int start(runnable *runnable, pthread_attr_t *attr=0);
+
     int start(runnable &runnable, pthread_attr_t *attr=0) { return start(&runnable, attr); }
 
     int join(void **retval = 0) const { return is_running() ? pthread_join(m_t, retval) : 0; }
 
     int stop(void *retval = 0);
 
-    void cancel() { if (is_running()) pthread_cancel(m_t); }
+    int cancel() { return is_running() ? pthread_cancel(m_t) : 0; }
 
     //--- accessors
     bool is_running() const { return m_tid != (unsigned)(-1); }
@@ -81,6 +82,7 @@ public:
 
 public:
     static thread *get_current();
+    static unsigned get_thread_counts();    // return running threads count
 
 protected:
     // not-allowed operations

@@ -17,7 +17,7 @@ OpenGCL is an open source cross-platform general component library written in c+
 
 ## Supported Platforms
  - GNU/Linux
- - WIN32
+ - WIN32 (Tested with Visual Studio 2019)
  - Cygwin
  - Mingw-64
 

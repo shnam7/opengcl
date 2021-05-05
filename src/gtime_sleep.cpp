@@ -13,7 +13,12 @@
 
 gcl_api void gcl::time::nanosleep(u64_t nsec) {
     tick_t tm = ticks();
-    tick_t duration = nsec_to_ticks(nsec);
+    tick_t tm_expire = tm + nsec_to_ticks(nsec);
+
+    // dmsg("tm=%zu expire=%zu due=%zu nsec=%zu nsec_in_tics=%zu\n",
+    //     tm, tm_expire, tm_expire-tm,
+    //     nsec, nsec_to_ticks(nsec)
+    // );
 
     // To save cpu time, Sleep() can be used. But, it's low resolution shows around 3ms deviation.
     // So, it is not used here.
@@ -22,9 +27,9 @@ gcl_api void gcl::time::nanosleep(u64_t nsec) {
     // nsec %= 1000000;
     // if (msec > 0) Sleep(msec);
 
-    while (elapsed_ticks(tm) <= duration) {
+    while (ticks() <= tm_expire) {
         Sleep(0);
-        pthread_testcancel();
+        pthread_testcancel();   // nanosleep should be pthread cancellation point
     }
 }
 

@@ -14,10 +14,13 @@
 #include "gtime.h"
 #include <stdio.h>
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 using namespace gcl;
 using namespace gcl::time;
+
 
 static int finished = 0;
 static pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
@@ -32,7 +35,7 @@ void *foo(void *data)
     for (int i=0; i<100; i++)
     {
         tick_t tm = ticks();
-        sleep(3);
+        msleep(3);
         elapsed = elapsed_ticks(tm);
         printf("tid=%u count=%i tick=%zu elapsed=%lu\n", tid, i, tm, ticks_to_msec(elapsed));
     }

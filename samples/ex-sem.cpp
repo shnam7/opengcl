@@ -27,7 +27,7 @@ void *foo(void *)
     sem.get_value(&val);
     printf("thread #%03u aquired sem. sem value=%d\n", tid, val);
 
-    sleep(1000);
+    msleep(100);
 
     sem.post();
     sem.get_value(&val);
@@ -51,7 +51,7 @@ int main()
     sem.get_value(&val);
     printf("\nmain: acquired sem. sem val=%d.\n", val);
 
-    sleep(1000);
+    msleep(1000);
     sem.post();
     printf("main: sem released\n");
 

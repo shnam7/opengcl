@@ -13,55 +13,35 @@
 
 #include "gtime.h"
 
+using namespace gcl;
+using namespace gcl::time;
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <pthread.h>
 
-using namespace gcl;
-using namespace gcl::time;
+static int __hpc = 0;   // flag: high precision counter (-1: no hpc, 0: hpc need init, 1: hpc init done)
+static LARGE_INTEGER __pf = { 0, 0 };   // cache for performance frequency
+inline nsec_t _ticks2nsec(tick_t ticks) { return (ticks * 1000000000)/__pf.QuadPart; }
+// inline tick_t _nsec2ticks(tick_t nsec) { return (nsec * __pf.QuadPart) / 1000000000; }
 
+// return tick count as nsec
 gcl_api tick_t gcl::time::ticks()
 {
     LARGE_INTEGER ticks;
-    return QueryPerformanceCounter(&ticks) ? (tick_t)ticks.QuadPart : 0;
-}
-
-gcl_api u64_t gcl::time::ticks_to_nsec(tick_t ticks)
-{
-    LARGE_INTEGER pf;
-    return QueryPerformanceFrequency(&pf) ? (ticks * 1000000000)/pf.QuadPart : 0;
-}
-
-gcl_api u32_t gcl::time::ticks_to_usec(tick_t ticks)
-{
-    LARGE_INTEGER pf;
-    return QueryPerformanceFrequency(&pf) ? (u32_t)((ticks * 1000000)/pf.QuadPart) : 0;
-}
-
-gcl_api u32_t gcl::time::ticks_to_msec(tick_t ticks)
-{
-    LARGE_INTEGER pf;
-    return QueryPerformanceFrequency(&pf) ? (u32_t)((ticks * 1000)/pf.QuadPart) : 0;
-}
-
-
-gcl_api tick_t gcl::time::nsec_to_ticks(u64_t nsec)
-{
-    LARGE_INTEGER pf;
-    return QueryPerformanceFrequency(&pf) ? (nsec * pf.QuadPart) / 1000000000 : 0;
-}
-
-gcl_api tick_t gcl::time::usec_to_ticks(u32_t usec)
-{
-    LARGE_INTEGER pf;
-    return QueryPerformanceFrequency(&pf) ? (usec * pf.QuadPart) / 1000000 : 0;
-}
-
-gcl_api tick_t gcl::time::msec_to_ticks(u32_t msec)
-{
-    LARGE_INTEGER pf;
-    return QueryPerformanceFrequency(&pf) ? (msec * pf.QuadPart) / 1000 : 0;
+    if (__hpc > 0) {
+        QueryPerformanceCounter(&ticks);
+        return _ticks2nsec(ticks.QuadPart);
+    }
+    if (__hpc == 0) {
+        __hpc = QueryPerformanceFrequency(&__pf) ? 1 : -1;
+        if (__hpc > 0) {
+            QueryPerformanceCounter(&ticks);
+            return _ticks2nsec(ticks.QuadPart);
+        }
+    }
+    return ((nsec_t)GetTickCount()) * 1000000;    // return ticks in msec (no hpc available)
 }
 
 
@@ -70,6 +50,7 @@ gcl_api tick_t gcl::time::msec_to_ticks(u32_t msec)
 
 gcl_api tick_t gcl::time::ticks()
 {
+    // returns nanosec time as tick count
     timespec tm;
     clock_gettime(CLOCK_MONOTONIC, &tm);
     return tm.tv_sec * 1000000000 + tm.tv_nsec;
