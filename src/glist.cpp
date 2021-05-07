@@ -7,9 +7,9 @@
 
 #include "glist.h"
 
-using gcl::linkable;
+using namespace gcl;
 
-gcl_api void gcl::linkable::append(linkable *node)
+gcl_api void linkable::append(linkable *node)
 {
     if (!node->is_alone()) node->detach();
     node->m_next = m_next;
@@ -18,7 +18,7 @@ gcl_api void gcl::linkable::append(linkable *node)
     m_next = node;
 }
 
-gcl_api unsigned gcl::linkable::length() const
+gcl_api unsigned linkable::length() const
 {
     unsigned count = 0;     // does not count myself
     linkable *node = m_next;

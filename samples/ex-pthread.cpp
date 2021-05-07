@@ -19,8 +19,6 @@
 #endif
 
 using namespace gcl;
-using namespace gcl::time;
-
 
 static int finished = 0;
 

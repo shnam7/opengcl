@@ -10,7 +10,7 @@
 #include "gtime.h"
 #include <stdio.h>
 
-using namespace gcl::time;
+using namespace gcl;
 
 void precision_test()
 {

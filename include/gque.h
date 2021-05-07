@@ -33,13 +33,14 @@ public:
 	bool init(unsigned capacity, unsigned item_size);
     void clear() const { if (m_q) { m_q->head = m_q->tail = m_q->begin; } }
 
-    bool put(const void *item) const;   // append
+    bool put(const void *item=0) const;   // append
 	bool get(void *item=0) const;       // pop from head
-    bool push(const void *item) const;  // prepend
-	bool pop(void *item=0) const { return get(item); };
+    bool push(const void *item=0) const;  // prepend
+	bool pop(void *item=0) const;       // pop from tail
 
     void *first() const { return peek(); }
-    void *last() const { return is_empty() ? 0 : _ptr(m_q->tail - m_q->item_size); }
+    void *last() const { return is_empty() ? 0 :
+        _ptr((m_q->tail==m_q->begin ? m_q->end : m_q->tail) - m_q->item_size); }
     void *peek() const { return is_empty() ? 0 : _ptr(m_q->head); }
 	void *peek_next(const void *current=0) const;
 	void *peek_prev(const void *current=0) const;
@@ -72,9 +73,9 @@ public:
 
     bool init(unsigned capacity) { return circular_queue::init(capacity, sizeof(T)); };
 
-	bool put(const T *item) const { return circular_queue::put(item); }
+	bool put(const T *item=0) const { return circular_queue::put(item); }
 	bool get(T *item=0) const { return circular_queue::get(item); }
-	bool push(const T *item) const { return circular_queue::push(item); }
+	bool push(const T *item=0) const { return circular_queue::push(item); }
 	bool pop(T *item=0) const { return circular_queue::pop(item); }
 
     //--- support reference type interface
@@ -109,9 +110,9 @@ public:
     bool init(unsigned capacity) { autolock_wr lock(m_lock); return queue<T>::init(capacity, sizeof(T)); };
     void clear() const { autolock_wr lock(m_lock); queue<T>::clear(); }
 
-    bool put(const T *item) { autolock_wr lock(m_lock); return queue<T>::put(item); }
+    bool put(const T *item=0) { autolock_wr lock(m_lock); return queue<T>::put(item); }
     bool get(T *item=0) { autolock_wr lock(m_lock); return queue<T>::get(item); }
-    bool push(const T *item) { autolock_wr lock(m_lock); return queue<T>::push(item); }
+    bool push(const T *item=0) { autolock_wr lock(m_lock); return queue<T>::push(item); }
 	bool pop(T *item=0) { autolock_wr lock(m_lock); return queue<T>::get(item); };
 
     //--- support reference type interface

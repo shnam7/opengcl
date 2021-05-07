@@ -30,7 +30,6 @@ inline int closesocket(socket_t sock) { return ::close(sock); }
 #endif
 
 using namespace gcl;
-using namespace gcl::time;
 
 socket_t gsock_create_socket(int type, unsigned long nbio)
 {

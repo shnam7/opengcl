@@ -15,7 +15,6 @@
 #include <stdio.h>
 
 using namespace gcl;
-using namespace gcl::time;
 
 int finished = 0;
 

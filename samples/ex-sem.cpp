@@ -13,7 +13,6 @@
 #include <stdio.h>
 
 using namespace gcl;
-using namespace gcl::time;
 
 semaphore sem(2);
 

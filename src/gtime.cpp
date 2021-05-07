@@ -14,7 +14,6 @@
 #include "gtime.h"
 
 using namespace gcl;
-using namespace gcl::time;
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -27,7 +26,7 @@ inline nsec_t _ticks2nsec(tick_t ticks) { return (ticks * 1000000000)/__pf.QuadP
 // inline tick_t _nsec2ticks(tick_t nsec) { return (nsec * __pf.QuadPart) / 1000000000; }
 
 // return tick count as nsec
-gcl_api tick_t gcl::time::ticks()
+gcl_api tick_t gcl::ticks()
 {
     LARGE_INTEGER ticks;
     if (__hpc > 0) {
@@ -48,7 +47,7 @@ gcl_api tick_t gcl::time::ticks()
 #else
 #include <time.h>
 
-gcl_api tick_t gcl::time::ticks()
+gcl_api tick_t gcl::ticks()
 {
     // returns nanosec time as tick count
     timespec tm;

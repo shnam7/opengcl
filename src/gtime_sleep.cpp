@@ -11,7 +11,7 @@
 #include <windows.h>
 #include <pthread.h>
 
-gcl_api void gcl::time::nanosleep(u64_t nsec) {
+gcl_api void gcl::nanosleep(u64_t nsec) {
     tick_t tm = ticks();
     tick_t tm_expire = tm + nsec_to_ticks(nsec);
 
@@ -36,7 +36,7 @@ gcl_api void gcl::time::nanosleep(u64_t nsec) {
 
 #else
 #include <time.h>
-gcl_api void gcl::time::nanosleep(u64_t nsec)
+gcl_api void gcl::nanosleep(u64_t nsec)
 {
     struct timespec ts = {(long)(nsec / 1000000000L), (long)((nsec % 1000000000))};
     ::nanosleep(&ts, 0);

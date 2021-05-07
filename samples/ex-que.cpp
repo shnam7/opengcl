@@ -31,7 +31,7 @@ void que_test()
 
     for (int i=0; i<5; ++i) {
         int val;
-        q.get(val);
+        q.pop(val);
         printf("%d poped, capacity=%d entries=%d rooms=%d\n", val, q.capacity(), q.length(), q.available());
     }
     printf("--> 5 entries were poped.\n\n");

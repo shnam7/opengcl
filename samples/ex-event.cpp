@@ -7,7 +7,6 @@
 #include <string.h>
 
 using namespace gcl;
-using namespace gcl::time;
 
 class Runner : public runnable, public event_emitter {
 public:
@@ -28,7 +27,7 @@ void event_handler(event_emitter::event &)
     printf("'suspend' event listener...called\n");
 }
 
-int main()
+void basic_test()
 {
     thread t1;
     Runner runner;
@@ -45,5 +44,11 @@ int main()
     t1.cancel();
     t1.join();
     printf("END of main.\n");
+}
+
+
+int main()
+{
+    basic_test();
     return 0;
 }

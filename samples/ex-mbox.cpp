@@ -9,7 +9,6 @@
 #include <string.h>
 
 using namespace gcl;
-using namespace gcl::time;
 
 typedef struct { char msg[128]; } msg_t;
 typedef queue_mt<msg_t> MsgBox;

@@ -9,64 +9,59 @@
 #include "gque.h"
 #include "gthread.h"
 
-#ifndef GEVENT_NAME_LENGTH_MAXIMUM
-#define GEVENT_NAME_LENGTH_MAXIMUM      15
-#endif
-
 namespace gcl {
 
 //-----------------------------------------------------------------------------
 //  class event_emitter
 //-----------------------------------------------------------------------------
+
 class gcl_api event_emitter {
 public:
-    struct _event_handler_block;
-    typedef struct _event_handler_block event_handler_block;
-    typedef void (*event_handler)(event_handler_block&);
+    static const int EVENT_NAME_LENGTH_MAX     = 15;
 
-    struct _event_handler_block {
-        const char      *name;
-        event_handler   handler;
-        void            *data;
-        u64_t           data_ex;        // extra data;
-        bool            once;
+    struct                  event_block;
+    typedef event_block     event;
+    typedef void            (*event_listener)(event&);
+
+    struct event_block {
+        const char          *name;
+        event_listener      listener;
+        void                *data;
+        bool                once;
     };
 
-    typedef event_handler_block event;   // for external use
 
 protected:
-    typedef struct _event_name_t {
-        char name[GEVENT_NAME_LENGTH_MAXIMUM + 1];
-    } event_name_t;
+    // struct event_name { char name[EVENT_NAME_LENGTH_MAX + 1]; } event_name;
+    typedef char event_name_t[EVENT_NAME_LENGTH_MAX+1];
 
-    queue<event_name_t>             m_event_name_que;
-    queue<event_handler_block>      m_event_handler_que;
-    rwlock                          m_lock;
+    queue<event_name_t>     m_names;
+    queue<event_block>      m_listeners;
+    rwlock                  m_lock;
 
 public:
-    event_emitter(unsigned max_event_types=20, unsigned event_queue_size=30)
-        : m_event_name_que(max_event_types), m_event_handler_que(event_queue_size) {}
+    event_emitter(unsigned max_event_names=10, unsigned max_listeners=10)
+        : m_names(max_event_names), m_listeners(max_listeners) {}
     ~event_emitter() {}
 
-    bool on(const char *event_name, event_handler handler, void *data=0, u64_t data_ex=0)
-        { return _on(event_name, handler, data, data_ex); }
+    bool on(const char *event_name, event_listener listener, void *data=0)
+        { return _on(event_name, listener, data); }
 
-    bool off(const char *event_name, event_handler handler);
+    bool off(const char *event_name, event_listener listener);
 
-    bool once(const char *event_name, event_handler handler, void *data=0, u64_t data_ex=0)
-        { return _on(event_name, handler, data, data_ex, true); }
+    bool once(const char *event_name, event_listener listener, void *data=0)
+        { return _on(event_name, listener, data, true); }
 
     bool emit(const char *event_name);
 
 protected:
-    bool _on(const char *event_name, event_handler handler, void *data=0,
-            u64_t data_ex=0, bool once=false);
+    bool _on(const char *event_name, event_listener listener, void *data=0, bool once=false);
 
     //--- helper function
     const char *__find_event_name(const char *event_name);
     const char *__register_event_name(const char *event_name);
     const char *__unregister_event_name(const char *event_name);
+    void __squeez_listeners();
 };
-
 
 } // namespace gcl

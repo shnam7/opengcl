@@ -13,9 +13,6 @@
 namespace gcl
 {
 
-namespace time
-{
-
 typedef uint64_t tick_t;   // timer tick count type
 typedef uint64_t nsec_t;   // nanosec time type
 typedef unsigned usec_t;   // microsec time type
@@ -45,7 +42,5 @@ inline void msleep(msec_t msec) { nanosleep(((nsec_t)msec) * 1000000); }
 //--- thread-aware sleep functions
 inline void sleep(unsigned sec) { nanosleep(((usec_t)sec) * 1000000000); }
 #endif
-
-} // namespace timer
 
 } // namespace gcl

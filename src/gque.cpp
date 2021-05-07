@@ -8,16 +8,19 @@
 #include "gque.h"
 #include <memory.h>
 
+using namespace gcl;
+
 //--------------------------------------------------------------------
-//	class gcl::_gque_core
+//	class circular_queue
 //--------------------------------------------------------------------
-gcl::circular_queue::~circular_queue()
+circular_queue::~circular_queue()
 {
     if (m_q) delete[] m_q;
     m_q = 0;
 }
 
-bool gcl::circular_queue::init(unsigned capacity, unsigned item_size) {
+bool circular_queue::init(unsigned capacity, unsigned item_size)
+{
     if (circular_queue::capacity() == capacity) { clear(); return true; }
 
     if (capacity == 0) {
@@ -44,40 +47,52 @@ bool gcl::circular_queue::init(unsigned capacity, unsigned item_size) {
 }
 
 // append
-bool gcl::circular_queue::put(const void *item) const
+bool circular_queue::put(const void *item) const
 {
     if (!m_q) return false;
 	unsigned npos = m_q->tail + m_q->item_size;
 	if ( npos == m_q->end ) npos = m_q->begin;
 	if ( npos == m_q->head ) return false;  // full
-    memcpy(tail(), item, m_q->item_size);
+    if (item) memcpy(tail(), item, m_q->item_size);
     m_q->tail = npos;
 	return true;
 }
 
 // pop from head
-bool gcl::circular_queue::get(void *item) const
+bool circular_queue::get(void *item) const
 {
     if (!m_q || m_q->head == m_q->tail ) return false;  // empty
 
-    if (item) memcpy(item, head(), m_q->item_size);
+    if (item) memcpy(item, _ptr(m_q->head), m_q->item_size);
 	m_q->head += m_q->item_size;
 	if ( m_q->head == m_q->end ) m_q->head = m_q->begin;
     return true;
 }
 
 // prepend
-bool gcl::circular_queue::push(const void *item) const {
+bool circular_queue::push(const void *item) const
+{
     if (!m_q) return false;
 	unsigned pos = m_q->head - m_q->item_size;
 	if ( pos < m_q->begin ) pos = m_q->end - m_q->item_size;
 	if ( pos == m_q->head ) return false;		// full
-    memcpy(_ptr(pos), item, m_q->item_size);
+    if (item) memcpy(_ptr(pos), item, m_q->item_size);
     m_q->head = pos;
 	return true;
 }
 
-void *gcl::circular_queue::peek_next(const void *peek) const {
+// pop from tail
+bool circular_queue::pop(void *item) const
+{
+    if (!m_q || m_q->head == m_q->tail ) return false;  // empty
+
+    if (item) memcpy(item, _ptr(m_q->tail-m_q->item_size), m_q->item_size);
+	m_q->tail -= m_q->item_size;
+    return true;
+}
+
+void *circular_queue::peek_next(const void *peek) const
+{
     if (is_empty()) return 0;
     if (peek == 0) return _ptr(m_q->head);   // return first entry
     if (peek < _ptr(m_q->begin) || peek >= _ptr(m_q->end)) return 0;   // sanity check
@@ -89,7 +104,7 @@ void *gcl::circular_queue::peek_next(const void *peek) const {
     return (void *)peek;
 }
 
-void *gcl::circular_queue::peek_prev(const void *peek) const
+void *circular_queue::peek_prev(const void *peek) const
 {
     if (is_empty()) return 0;
     if (peek == 0) return _ptr(m_q->tail - m_q->item_size);             // return last entry
@@ -101,7 +116,7 @@ void *gcl::circular_queue::peek_prev(const void *peek) const
     return (void *)peek;
 }
 
-bool gcl::circular_queue::is_full() const
+bool circular_queue::is_full() const
 {
     if (!m_q) return true;  // zero capacity
 	unsigned npos = m_q->tail + m_q->item_size;
@@ -109,7 +124,7 @@ bool gcl::circular_queue::is_full() const
 	return npos == m_q->head;
 }
 
-unsigned gcl::circular_queue::length() const
+unsigned circular_queue::length() const
 {
     if (!m_q) return 0;
     unsigned n = (m_q->head <= m_q->tail)
@@ -118,7 +133,7 @@ unsigned gcl::circular_queue::length() const
     return n / m_q->item_size;
 }
 
-unsigned gcl::circular_queue::available() const
+unsigned circular_queue::available() const
 {
     if (!m_q) return 0;
 	int n = ( m_q->head>m_q->tail ) ? (m_q->head-m_q->tail)
@@ -126,7 +141,7 @@ unsigned gcl::circular_queue::available() const
 	return (n / m_q->item_size) - 1;
 }
 
-unsigned gcl::circular_queue::capacity() const
+unsigned circular_queue::capacity() const
 {
     return m_q ? ((m_q->end - m_q->begin) / m_q->item_size) - 1 : 0;
 }
