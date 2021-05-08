@@ -1,25 +1,18 @@
 //
-//		* exthread_x.cpp
+//  OpenGCL Example: Semaphore
 //
-//		OpenGCL Example: gcl::thread operations
-//
-//		Written by Soo-Hyuk Nam.
-//			2003. 4. 29 Tue.
-//
-
-/* refer to notes in gthread.h and /usr/include/features.h */
 
 #include "gcl.h"
 #include <stdio.h>
 
 using namespace gcl;
 
-semaphore sem(2);
+Semaphore sem(2);
 
 void *foo(void *)
 {
     int val = 0;
-    unsigned tid = thread::get_current()->thread_id();
+    unsigned tid = Thread::get_current()->thread_id();
 
     printf("\nthread #%03u started. waiting for sem...\n", tid);
     sem.wait();
@@ -42,7 +35,7 @@ int main()
     printf("--- initial sem value=%d\n", val);
 
     const int TH_MAX = 10;
-    thread th[TH_MAX];
+    Thread th[TH_MAX];
     for (int i=0; i<TH_MAX; i++)
         th[i].start(foo);
 

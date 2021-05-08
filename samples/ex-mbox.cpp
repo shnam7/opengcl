@@ -11,11 +11,11 @@
 using namespace gcl;
 
 typedef struct { char msg[128]; } msg_t;
-typedef queue_mt<msg_t> MsgBox;
+typedef QueueMT<msg_t> MsgBox;
 
 void *foo_put(void *data)
 {
-    unsigned tid = thread::get_current()->thread_id();
+    unsigned tid = Thread::get_current()->thread_id();
     MsgBox &mbox = *(MsgBox *)data;
 
     int count = 0;
@@ -32,7 +32,7 @@ void *foo_put(void *data)
 
 void *foo_get(void *data)
 {
-    unsigned tid = thread::get_current()->thread_id();
+    unsigned tid = Thread::get_current()->thread_id();
     MsgBox &mbox = *(MsgBox *)data;
 
     int count = 0;
@@ -52,8 +52,8 @@ int main()
     MsgBox mbox(200);
 
 	const int MAX_THREAD = 10;
-	thread getters[MAX_THREAD];
-	thread putters[MAX_THREAD];
+	Thread getters[MAX_THREAD];
+	Thread putters[MAX_THREAD];
 	for (int i=0; i<MAX_THREAD; ++i)
 	{
 		putters[i].start( foo_put, &mbox );

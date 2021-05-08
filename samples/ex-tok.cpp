@@ -14,7 +14,7 @@
 int test1()
 {
 	const char *str = "A;B;C:D;E;F;\n";
-	gcl::gtockenizer gtok( str, ";\n" );
+	gcl::Tockenizer gtok( str, ";\n" );
 	while ( gtok.hasMoreTokens() )
 	{
 		char buf[256];

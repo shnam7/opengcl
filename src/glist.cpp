@@ -1,7 +1,7 @@
 /*
  *  @packaage OpenGCL
  *
- *  @module list -singly and doubly linked list
+ *  @module List -singly and doubly linked list
  *
  */
 
@@ -9,7 +9,7 @@
 
 using namespace gcl;
 
-gcl_api void linkable::append(linkable *node)
+gcl_api void Linkable::append(Linkable *node)
 {
     if (!node->is_alone()) node->detach();
     node->m_next = m_next;
@@ -18,10 +18,10 @@ gcl_api void linkable::append(linkable *node)
     m_next = node;
 }
 
-gcl_api unsigned linkable::length() const
+gcl_api unsigned Linkable::length() const
 {
     unsigned count = 0;     // does not count myself
-    linkable *node = m_next;
+    Linkable *node = m_next;
     while (node != this) {
         node = node->m_next;
         count++;

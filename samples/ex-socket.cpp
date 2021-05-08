@@ -1,7 +1,7 @@
 //
 //		* exsocket.cpp
 //
-//		OpenGCL Example: gsocket operations
+//		OpenGCL Example: Socket operations
 //
 //		Written by Soo-Hyuk Nam.
 //			2002. 6. 4. Tue.
@@ -23,8 +23,8 @@ using namespace gcl;
 
 static void *_serv_d(void *data)
 {
-	thread *th = thread::get_current();
-	gsocket gs( *(socket_t *)data );
+	Thread *th = Thread::get_current();
+	Socket gs( *(socket_t *)data );
 
 	if ( !gs.is_valid() ) { delete th; return 0; }
 	gs.set_NBIO( true );
@@ -54,7 +54,7 @@ static void *_serv_d(void *data)
 
 void _server()
 {
-	gsocket gsListener;
+	Socket gsListener;
 
 	printf( "Starting server...\n" );
 	int r = gsListener.create_socket( true );
@@ -85,7 +85,7 @@ void _server()
         }
 		printf( "client from %s accepted: socket=%d readable=%d.\n", inet_ntoa(sa.sin_addr), (int)sock, r);
 
-		thread *th = new thread();
+		Thread *th = new Thread();
 		th->start( _serv_d, (void *)&sock );
 /*		pid_t pid = fork();
 		if ( pid == 0 )	// child process
@@ -120,7 +120,7 @@ void _server()
 
 void _client()
 {
-	gsocket gs;
+	Socket gs;
 
 	printf( "Starting client...\n" );
 

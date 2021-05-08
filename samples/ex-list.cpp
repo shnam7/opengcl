@@ -3,13 +3,13 @@
 
 using namespace gcl;
 
-struct Item : public linkable {
+struct Item : public Linkable {
     char msg[16];
 };
 
 
 int main() {
-    list<Item> item_list;
+    List<Item> item_list;
 
     Item *item_to_remove = 0;
 

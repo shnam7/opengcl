@@ -1,7 +1,7 @@
 /*
- *	* gsem.h
+ *	* gsemaphore.h
  *
- *	OpenGCL Module : gsem - POSIX semaphore compatables and C++ wrappers
+ *	OpenGCL Module : gsemaphore - POSIX semaphore compatables and C++ wrappers
  *
  *	Written by Soo-Hyuk Nam.
  *		2004. 1. 15. Thu.
@@ -22,16 +22,16 @@ namespace gcl
 {
 
 //--------------------------------------------------------------------
-//	class semaphore
+//	class Semaphore
 //--------------------------------------------------------------------
-class gcl_api semaphore
+class gcl_api Semaphore
 {
 protected:
     sem_t m_sem;
 
 public:
-    semaphore(unsigned int val = 0) { sem_init(&m_sem, 0, val); }
-    ~semaphore() { sem_destroy(&m_sem); }
+    Semaphore(unsigned int val = 0) { sem_init(&m_sem, 0, val); }
+    ~Semaphore() { sem_destroy(&m_sem); }
 
     int wait() { return sem_wait(&m_sem); }
     int trywait() { return sem_trywait(&m_sem); }

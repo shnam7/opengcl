@@ -247,7 +247,7 @@ ipaddr_t gsock_hostaddr(const char *hostname)
 //--------------------------------------------------------------------
 //	class gcl::socket
 //--------------------------------------------------------------------
-bool gcl::gsocket::create_socket(int type, unsigned long nbio)
+bool gcl::Socket::create_socket(int type, unsigned long nbio)
 {
     if (m_sock != INVALID_SOCKET) closesocket(m_sock);
     m_sock = ::socket(AF_INET, type, 0);
@@ -255,7 +255,7 @@ bool gcl::gsocket::create_socket(int type, unsigned long nbio)
     return (nbio) ? ioctl(m_sock, FIONBIO, &nbio) == 0 : true;
 }
 
-bool gcl::gsocket::close_socket()
+bool gcl::Socket::close_socket()
 {
     if (m_sock == INVALID_SOCKET) return false;
     if (closesocket(m_sock) != 0) return false;
@@ -263,7 +263,7 @@ bool gcl::gsocket::close_socket()
     return true;
 }
 
-bool gcl::gsocket::attach(socket_t sock)
+bool gcl::Socket::attach(socket_t sock)
 {
     if (sock == INVALID_SOCKET) return false;
     if (m_sock == sock) return true;
@@ -272,7 +272,7 @@ bool gcl::gsocket::attach(socket_t sock)
     return true;
 }
 
-bool gcl::gsocket::detach()
+bool gcl::Socket::detach()
 {
     m_sock = INVALID_SOCKET;
     return true;

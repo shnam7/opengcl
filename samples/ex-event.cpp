@@ -8,7 +8,7 @@
 
 using namespace gcl;
 
-class Runner : public runnable, public event_emitter {
+class Runner : public Runnable, public EventEmitter {
 public:
     void *run()
     {
@@ -22,14 +22,14 @@ public:
     }
 };
 
-void event_handler(event_emitter::event &)
+void event_handler(EventEmitter::event &)
 {
     printf("'suspend' event listener...called\n");
 }
 
 void basic_test()
 {
-    thread t1;
+    Thread t1;
     Runner runner;
     runner.on("suspend", event_handler, &t1);
 

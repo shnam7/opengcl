@@ -1,7 +1,7 @@
 /*
  *  @packaage OpenGCL
  *
- *  @module thread - POSIX pthread compatables and C++ wrappers
+ *  @module gthread - POSIX pthread compatables and C++ wrappers
  *
  *	Written by Soo-Hyuk Nam.
  *		2004. 1. 15. Thu.
@@ -26,14 +26,14 @@
 namespace gcl
 {
 
-//--- runnable
-class gcl_api runnable
+//--- Runnable
+class gcl_api Runnable
 {
-    friend class thread;
+    friend class Thread;
 
 protected:
-    runnable() {}
-    virtual ~runnable() {}
+    Runnable() {}
+    virtual ~Runnable() {}
     virtual void *run() { return (void *)0; }
 
     // NOTE: these functions applies for gthread_self()
@@ -41,8 +41,8 @@ protected:
     void testCancel() { pthread_testcancel(); }
 };
 
-//--- thread
-class gcl_api thread : public runnable
+//--- Thread
+class gcl_api Thread : public Runnable
 {
 protected:
     pthread_t       m_t;                        // pthread instance handle
@@ -53,19 +53,19 @@ protected:
     static void *__thread_wrapper(void *);
 
 public:
-    thread();
-    thread(void *(*proc)(void *), void *data=0, pthread_attr_t *attr=0) { start(proc, data, attr); }
-    thread(runnable *runnable, pthread_attr_t *attr=0) { start(runnable, attr); }
-    ~thread();
+    Thread();
+    Thread(void *(*proc)(void *), void *data=0, pthread_attr_t *attr=0) { start(proc, data, attr); }
+    Thread(Runnable *Runnable, pthread_attr_t *attr=0) { start(Runnable, attr); }
+    ~Thread();
 
     //--- manipulators
     int start(pthread_attr_t *attr=0) { return start(this, attr); };
 
     int start(void *(*proc)(void *), void *data=0, pthread_attr_t *attr=0);
 
-    int start(runnable *runnable, pthread_attr_t *attr=0);
+    int start(Runnable *Runnable, pthread_attr_t *attr=0);
 
-    int start(runnable &runnable, pthread_attr_t *attr=0) { return start(&runnable, attr); }
+    int start(Runnable &Runnable, pthread_attr_t *attr=0) { return start(&Runnable, attr); }
 
     int join(void **retval = 0) const { return is_running() ? pthread_join(m_t, retval) : 0; }
 
@@ -81,28 +81,28 @@ public:
     pthread_t get_handle() const { return m_t; }
 
 public:
-    static thread *get_current();
+    static Thread *get_current();
     static unsigned get_thread_counts();    // return running threads count
 
 protected:
     // not-allowed operations
-    thread(pthread_t t);
-    thread(thread &t);
-    thread &operator=(thread &t);
-    thread &operator=(pthread_t t);
+    Thread(pthread_t t);
+    Thread(Thread &t);
+    Thread &operator=(Thread &t);
+    Thread &operator=(pthread_t t);
 };
 
 
-//--- mutex
-class gcl_api mutex
+//--- Mutex
+class gcl_api Mutex
 {
 protected:
     pthread_mutex_t m_mtx;
 
 public:
-    mutex() { pthread_mutex_init(&m_mtx, 0); }
-    mutex(int kind);
-    ~mutex() { pthread_mutex_destroy(&m_mtx); }
+    Mutex() { pthread_mutex_init(&m_mtx, 0); }
+    Mutex(int kind);
+    ~Mutex() { pthread_mutex_destroy(&m_mtx); }
 
     bool lock() { return pthread_mutex_lock(&m_mtx) == 0; }
 
@@ -115,14 +115,14 @@ public:
 
 
 //--- cond
-class gcl_api condition
+class gcl_api Condition
 {
 protected:
     pthread_cond_t m_cond;
 
 public:
-    condition() { pthread_cond_init(&m_cond, 0); }
-    ~condition() { pthread_cond_destroy(&m_cond); }
+    Condition() { pthread_cond_init(&m_cond, 0); }
+    ~Condition() { pthread_cond_destroy(&m_cond); }
 
     bool signal() { return pthread_cond_signal(&m_cond) == 0; }
 
@@ -130,7 +130,7 @@ public:
 
     bool wait(pthread_mutex_t *mtx) { return pthread_cond_wait(&m_cond, mtx) == 0; }
 
-    bool wait(mutex &mtx) { return pthread_cond_wait(&m_cond, mtx.get_handle()) == 0; }
+    bool wait(Mutex &mtx) { return pthread_cond_wait(&m_cond, mtx.get_handle()) == 0; }
 
     bool timedwait(pthread_mutex_t *mtx, const struct timespec *ts) { return pthread_cond_timedwait(&m_cond, mtx, ts) == 0; }
 
@@ -142,23 +142,23 @@ public:
         return pthread_cond_timedwait(&m_cond, mtx, &ts) == 0;
     }
 
-    bool timedwait(mutex &mtx, const struct timespec *ts) { return timedwait(mtx.get_handle(), ts); }
+    bool timedwait(Mutex &mtx, const struct timespec *ts) { return timedwait(mtx.get_handle(), ts); }
 
-    bool timedwait(mutex &mtx, unsigned long timeout_msec) { return timedwait(mtx.get_handle(), timeout_msec); }
+    bool timedwait(Mutex &mtx, unsigned long timeout_msec) { return timedwait(mtx.get_handle(), timeout_msec); }
 
     pthread_cond_t *get_handle() { return &m_cond; }
 };
 
 
-//--- rwlock
-class gcl_api rwlock
+//--- RWLock
+class gcl_api RWLock
 {
 protected:
     pthread_rwlock_t m_rwlock;
 
 public:
-    rwlock() { pthread_rwlock_init(&m_rwlock, 0); }
-    ~rwlock() { pthread_rwlock_destroy(&m_rwlock); }
+    RWLock() { pthread_rwlock_init(&m_rwlock, 0); }
+    ~RWLock() { pthread_rwlock_destroy(&m_rwlock); }
 
     int rdlock() { return pthread_rwlock_rdlock(&m_rwlock); }
 
@@ -174,36 +174,36 @@ public:
 };
 
 
-//--- autolock: locked by constructor, unlocked by destructor
-class gcl_api autolock {
+//--- AutoLock: locked by constructor, unlocked by destructor
+class gcl_api AutoLock {
 protected:
-    mutex &m_mtx;
+    Mutex &m_mtx;
 
 public:
-    autolock(mutex &mtx) : m_mtx(mtx) { mtx.lock(); }
-    ~autolock() { m_mtx.unlock(); }
+    AutoLock(Mutex &mtx) : m_mtx(mtx) { mtx.lock(); }
+    ~AutoLock() { m_mtx.unlock(); }
 };
 
 
-//--- autolock_rd: autolock for read
-class gcl_api autolock_rd {
+//--- AutoLockRead: AutoLock for read
+class gcl_api AutoLockRead {
 protected:
-    rwlock &m_lock;
+    RWLock &m_lock;
 
 public:
-    autolock_rd(rwlock &lock) : m_lock(lock) { lock.rdlock(); }
-    ~autolock_rd() { m_lock.unlock(); }
+    AutoLockRead(RWLock &lock) : m_lock(lock) { lock.rdlock(); }
+    ~AutoLockRead() { m_lock.unlock(); }
 };
 
 
-//--- autolock_wr: autolock for read
-class gcl_api autolock_wr {
+//--- AutoLockWrite: AutoLock for write
+class gcl_api AutoLockWrite {
 protected:
-    rwlock &m_lock;
+    RWLock &m_lock;
 
 public:
-    autolock_wr(rwlock &lock) : m_lock(lock) { lock.wrlock(); }
-    ~autolock_wr() { m_lock.unlock(); }
+    AutoLockWrite(RWLock &lock) : m_lock(lock) { lock.wrlock(); }
+    ~AutoLockWrite() { m_lock.unlock(); }
 };
 
 } // namespace gcl

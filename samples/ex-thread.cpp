@@ -21,7 +21,7 @@ int finished = 0;
 //--- thread function
 void *foo(void *)
 {
-    thread *th = thread::get_current();
+    Thread *th = Thread::get_current();
     unsigned tid = th->thread_id();
 
     tick_t tm0 = ticks();
@@ -39,7 +39,7 @@ void *foo(void *)
 }
 
 //--- thread class
-class MyThread : public thread {
+class MyThread : public Thread {
 protected:
     unsigned    m_time_to_sleep;
 
@@ -56,7 +56,7 @@ public:
     }
 
     void *run() {
-        unsigned tid = thread::get_current()->thread_id();
+        unsigned tid = Thread::get_current()->thread_id();
         printf("MyThread #%d started, and gong to sleep for %d msec.\n", tid, m_time_to_sleep);
         msleep(m_time_to_sleep);
         printf("MyThread #%d is awake.\n", m_tid);
@@ -71,13 +71,13 @@ public:
 void running_test()
 {
     const int TH_MAX = 512;
-    thread th[TH_MAX];
+    Thread th[TH_MAX];
     for (int i = 0; i < TH_MAX; i++)
         th[i].start(foo);
 
     // check if main thread is running
     for (int i=0; i<100; i++) {
-        printf(">>> main thread id=%d count=%d\n", thread::get_current()->thread_id(), i);
+        printf(">>> main thread id=%d count=%d\n", Thread::get_current()->thread_id(), i);
         msleep(3);
     }
 
@@ -90,12 +90,12 @@ void running_test()
 void cancel_test()
 {
     printf("main thread is creating an instance of MyThread...\n");
-    thread *t1 = new MyThread(1000);    // this instance will be deleted by its own thread
+    Thread *t1 = new MyThread(1000);    // this instance will be deleted by its own thread
     printf("main thread going to sleep...\n");
     msleep(500);
     printf("main thread now awake, and cancelling sleeping thread\n");
 
-    thread *tmain = thread::get_current();
+    Thread *tmain = Thread::get_current();
     dmsg("main: tid=%d\n", tmain->thread_id());
     dmsg("main: waiting for the child thread to finish (joining to the child).\n\n");
     t1->join();

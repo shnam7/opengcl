@@ -1,7 +1,7 @@
 /*
  *  @packaage OpenGCL
  *
- *  @module mmap - memory mapped file
+ *  @module MMap - memory mapped file
  */
 
 #pragma once
@@ -21,9 +21,9 @@ namespace gcl
 {
 
 //--------------------------------------------------------------------
-//	class mmap
+//	class MMap
 //--------------------------------------------------------------------
-class gcl_api mmap
+class gcl_api MMap
 {
 protected:
     void        *m_hMap = 0; // handle to mmap
@@ -31,8 +31,8 @@ protected:
     size_t      m_size = 0;
 
 public:
-    mmap() {}
-    ~mmap() { close(); }
+    MMap() {}
+    ~MMap() { close(); }
 
     // read only mappings
     const char *mmap_ro(int filedes, off_t offset, size_t size, const char *name = 0)
@@ -104,16 +104,16 @@ protected:
 
 
 //--------------------------------------------------------------------
-//	class mmap_file
+//	class MMapFile
 //--------------------------------------------------------------------
-class gcl_api mmap_file : public mmap
+class gcl_api MMapFile : public MMap
 {
 protected:
     int m_fd = -1; // file descriptor
 
 public:
-    mmap_file() {}
-    ~mmap_file() { close(); }
+    MMapFile() {}
+    ~MMapFile() { close(); }
 
     //--- manipulators
     // read only mappings

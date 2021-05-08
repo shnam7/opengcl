@@ -12,10 +12,10 @@
 namespace gcl {
 
 //-----------------------------------------------------------------------------
-//  class event_emitter
+//  class EventEmitter
 //-----------------------------------------------------------------------------
 
-class gcl_api event_emitter {
+class gcl_api EventEmitter {
 public:
     static const int EVENT_NAME_LENGTH_MAX     = 15;
 
@@ -35,14 +35,14 @@ protected:
     // struct event_name { char name[EVENT_NAME_LENGTH_MAX + 1]; } event_name;
     typedef char event_name_t[EVENT_NAME_LENGTH_MAX+1];
 
-    queue<event_name_t>     m_names;
-    queue<event_block>      m_listeners;
-    rwlock                  m_lock;
+    Queue<event_name_t>     m_names;
+    Queue<event_block>      m_listeners;
+    RWLock                  m_lock;
 
 public:
-    event_emitter(unsigned max_event_names=10, unsigned max_listeners=10)
+    EventEmitter(unsigned max_event_names=10, unsigned max_listeners=10)
         : m_names(max_event_names), m_listeners(max_listeners) {}
-    ~event_emitter() {}
+    ~EventEmitter() {}
 
     bool on(const char *event_name, event_listener listener, void *data=0)
         { return _on(event_name, listener, data); }

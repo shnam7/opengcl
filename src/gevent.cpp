@@ -14,9 +14,9 @@ using namespace gcl;
 //-----------------------------------------------------------------------------
 //  class GEventEmitter
 //-----------------------------------------------------------------------------
-bool event_emitter::off(const char *event_name, event_listener listener)
+bool EventEmitter::off(const char *event_name, event_listener listener)
 {
-    autolock_wr lock(m_lock);
+    AutoLockWrite lock(m_lock);
     const char *name = __find_event_name(event_name);
     if (!name) return false;
 
@@ -36,9 +36,9 @@ bool event_emitter::off(const char *event_name, event_listener listener)
     return true;
 }
 
-bool event_emitter::emit(const char *event_name)
+bool EventEmitter::emit(const char *event_name)
 {
-    autolock_wr lock(m_lock);
+    AutoLockWrite lock(m_lock);
     const char *name = __find_event_name(event_name);
     if (!name) return false;
 
@@ -53,17 +53,17 @@ bool event_emitter::emit(const char *event_name)
     return true;
 }
 
-bool event_emitter::_on(const char *event_name, event_listener listener, void *data, bool once)
+bool EventEmitter::_on(const char *event_name, event_listener listener, void *data, bool once)
 {
     if (strlen(event_name) > EVENT_NAME_LENGTH_MAX) {
-        dmsg("event_emitter::_on: event_name is too long. max length=%d\n", EVENT_NAME_LENGTH_MAX);
+        dmsg("EventEmitter::_on: event_name is too long. max length=%d\n", EVENT_NAME_LENGTH_MAX);
         return false;
     }
 
-    autolock_wr lock(m_lock);
+    AutoLockWrite lock(m_lock);
     const char *name = __register_event_name(event_name);
     if (!name) {
-        dmsg("event_emitter::_on: register_event_name on '%s' failed\n", event_name);
+        dmsg("EventEmitter::_on: register_event_name on '%s' failed\n", event_name);
         return false;
     }
 
@@ -74,7 +74,7 @@ bool event_emitter::_on(const char *event_name, event_listener listener, void *d
     return m_listeners.put(eb);
 }
 
-const char *event_emitter::__find_event_name(const char *event_name)
+const char *EventEmitter::__find_event_name(const char *event_name)
 {
     const char *peek = (const char *)m_names.peek();
     while (peek) {
@@ -84,7 +84,7 @@ const char *event_emitter::__find_event_name(const char *event_name)
     return 0;
 }
 
-const char *event_emitter::__register_event_name(const char *event_name)
+const char *EventEmitter::__register_event_name(const char *event_name)
 {
     const char *name = __find_event_name(event_name);
     if (name) return name;  // already registered
@@ -100,7 +100,7 @@ const char *event_emitter::__register_event_name(const char *event_name)
         peek = (char *)m_names.peek_next((event_name_t *)peek);
     }
 
-    // if no empty slot, then add too queue
+    // if no empty slot, then add to queue
     event_name_t entry;
     strncpy((char *)entry, event_name, EVENT_NAME_LENGTH_MAX);
     entry[EVENT_NAME_LENGTH_MAX] = 0;
@@ -108,7 +108,7 @@ const char *event_emitter::__register_event_name(const char *event_name)
     return m_names.put(entry) ? (const char *)m_names.last() : 0;
 }
 
-const char *event_emitter::__unregister_event_name(const char *event_name)
+const char *EventEmitter::__unregister_event_name(const char *event_name)
 {
     char *peek = (char *)m_names.peek();
     while (peek) {
@@ -121,7 +121,7 @@ const char *event_emitter::__unregister_event_name(const char *event_name)
     return 0;
 }
 
-void event_emitter::__squeez_listeners()
+void EventEmitter::__squeez_listeners()
 {
     event_block *peek = m_listeners.peek();
     // trim from head

@@ -35,9 +35,9 @@ using namespace gcl::util;
 
 
 //--------------------------------------------------------------------
-//	class mmap
+//	class MMap
 //--------------------------------------------------------------------
-gcl_api void mmap::close()
+gcl_api void MMap::close()
 {
     if (!m_ptr) return;
 
@@ -54,7 +54,7 @@ gcl_api void mmap::close()
     m_ptr = 0;
 }
 
-gcl_api char *mmap::_mmap(int filedes, off_t offset, size_t size, bool readonly, const char *name)
+gcl_api char *MMap::_mmap(int filedes, off_t offset, size_t size, bool readonly, const char *name)
 {
     if (is_valid()) close();
 
@@ -122,11 +122,11 @@ gcl_api char *mmap::_mmap(int filedes, off_t offset, size_t size, bool readonly,
 
 
 //--------------------------------------------------------------------
-//	class mmap_file
+//	class MMapFile
 //--------------------------------------------------------------------
-gcl_api void mmap_file::close()
+gcl_api void MMapFile::close()
 {
-    mmap::close();
+    MMap::close();
     if (m_fd != -1)
     {
 #ifdef _WIN32
@@ -138,16 +138,16 @@ gcl_api void mmap_file::close()
     }
 }
 
-gcl_api size_t mmap_file::get_file_length() const
+gcl_api size_t MMapFile::get_file_length() const
 {
     return m_fd == -1 ? 0 : _filelength(m_fd);
 }
 
-gcl_api char *mmap_file::_mmap(const char *filePathName, off_t offset, size_t size,
+gcl_api char *MMapFile::_mmap(const char *filePathName, off_t offset, size_t size,
                                      bool bReadOnly, const char *name)
 {
     if (is_valid()) close();
     m_fd = open(filePathName, bReadOnly ? O_RDONLY : O_RDWR);
     if (m_fd == -1) return 0;
-    return mmap::_mmap(m_fd, offset, size, bReadOnly, name);
+    return MMap::_mmap(m_fd, offset, size, bReadOnly, name);
 }

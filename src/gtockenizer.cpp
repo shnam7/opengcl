@@ -13,7 +13,7 @@
 #include "gtockenizer.h"
 #include <string.h>
 
-void gcl::gtockenizer::_findNextToken()
+void gcl::Tockenizer::_findNextToken()
 {
     const char *p = m_pos;
     while (p < m_tail) {
@@ -23,12 +23,12 @@ void gcl::gtockenizer::_findNextToken()
 	m_end = p;
 }
 
-gcl_api bool gcl::gtockenizer::bind(const char *str, const char *sep)
+gcl_api bool gcl::Tockenizer::bind(const char *str, const char *sep)
 {
     return bind(str, (unsigned)strlen(str), sep);
 }
 
-gcl_api bool gcl::gtockenizer::bind(const char *str, unsigned slen, const char *sep)
+gcl_api bool gcl::Tockenizer::bind(const char *str, unsigned slen, const char *sep)
 {
     m_head = str;
     m_tail = (str) ? str+slen : 0;
@@ -38,7 +38,7 @@ gcl_api bool gcl::gtockenizer::bind(const char *str, unsigned slen, const char *
 	return true;
 }
 
-gcl_api bool gcl::gtockenizer::setSeparators(const char *sep)
+gcl_api bool gcl::Tockenizer::setSeparators(const char *sep)
 {
     unsigned slen = (unsigned)strlen(sep);
 	if ( slen >= sizeof(m_sep) ) { m_sep[0] = 0; return false; }
@@ -47,7 +47,7 @@ gcl_api bool gcl::gtockenizer::setSeparators(const char *sep)
 	return true;
 }
 
-gcl_api bool gcl::gtockenizer::getNext(char *buf, unsigned bufSize, char *pSepBy, unsigned *pTokenLen)
+gcl_api bool gcl::Tockenizer::getNext(char *buf, unsigned bufSize, char *pSepBy, unsigned *pTokenLen)
 {
     if ( m_pos >= m_tail ) return false;
 	unsigned tokLen = (unsigned)(m_end - m_pos);
@@ -64,7 +64,7 @@ gcl_api bool gcl::gtockenizer::getNext(char *buf, unsigned bufSize, char *pSepBy
 	return 1;
 }
 
-gcl_api void gcl::gtockenizer::rewind()
+gcl_api void gcl::Tockenizer::rewind()
 {
 	m_pos = m_head;
 	_findNextToken();

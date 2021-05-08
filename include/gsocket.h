@@ -236,24 +236,24 @@ gcl_api ipaddr_t gsock_hostaddr(const char *hostname);
 namespace gcl {
 
 //--------------------------------------------------------------------
-//	class GSocket
+//	class Socket
 //--------------------------------------------------------------------
-class gcl_api gsocket {
+class gcl_api Socket {
 protected:
 	socket_t		m_sock;
 
 private:
-	gsocket(const gsocket& sock);		// copy constructor is not allowed.
-	gsocket operator=(socket_t sock);	// assignment is not allowed
+	Socket(const Socket& sock);		// copy constructor is not allowed.
+	Socket operator=(socket_t sock);	// assignment is not allowed
 
 public:
 	enum { DEF_BACKLOG=5 };
 
 public:
 	//--- creators
-	gsocket() : m_sock(INVALID_SOCKET) {}
-	gsocket(socket_t sock) : m_sock(sock) {}
-	~gsocket() { close_socket(); }
+	Socket() : m_sock(INVALID_SOCKET) {}
+	Socket(socket_t sock) : m_sock(sock) {}
+	~Socket() { close_socket(); }
 
 	//--- manipulations
 	bool create_socket(int type, unsigned long nbio);

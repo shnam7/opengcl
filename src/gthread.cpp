@@ -10,12 +10,11 @@
 #include <errno.h>
 #endif
 
-using gcl::runnable;
-using gcl::thread;
+using namespace gcl;
 
 struct __thread_wrapper_data {
-    thread         *instance;
-    runnable       *pRunnable;
+    Thread         *instance;
+    Runnable       *pRunnable;
     void                *(*proc)(void *);
     void                *data;
     sem_t               *sem;   // signaling completion of thread creation
@@ -23,19 +22,19 @@ struct __thread_wrapper_data {
 
 static pthread_key_t   __key_to_instance;
 static unsigned        __instance_count = 0;
-static thread          __main_thread;
+static Thread          __main_thread;
 
-void thread::__thread_destructor(void *data) {
+void Thread::__thread_destructor(void *data) {
 
     // dmsg("---thread #%d terminated\n", ((thread *)data)->m_tid);
-    ((thread *)data)->m_tid = (unsigned)(-1);
+    ((Thread *)data)->m_tid = (unsigned)(-1);
     if (--__instance_count == 0) {
         pthread_key_delete(__key_to_instance);
         __key_to_instance = 0;
     }
 }
 
-void *thread::__thread_wrapper(void *data)
+void *Thread::__thread_wrapper(void *data)
 {
     struct __thread_wrapper_data args = *(struct __thread_wrapper_data *)data;
     pthread_setspecific(__key_to_instance, args.instance);
@@ -53,9 +52,9 @@ void *thread::__thread_wrapper(void *data)
 
 
 //--------------------------------------------------------------------
-//	class thread
+//	class Thread
 //--------------------------------------------------------------------
-thread::thread() {
+Thread::Thread() {
     // if (__instance_count == 0
     if (__instance_count == 0) {
         pthread_key_create(&__key_to_instance, 0);
@@ -66,11 +65,11 @@ thread::thread() {
     }
 }
 
-thread::~thread() {
+Thread::~Thread() {
     stop();
 }
 
-gcl_api int thread::start(void *(*proc)(void *), void *data, pthread_attr_t *attr)
+gcl_api int Thread::start(void *(*proc)(void *), void *data, pthread_attr_t *attr)
 {
     if (is_running()) return EINVAL;
 
@@ -82,23 +81,23 @@ gcl_api int thread::start(void *(*proc)(void *), void *data, pthread_attr_t *att
     return err;
 }
 
-gcl_api int thread::start(runnable *runnable, pthread_attr_t *attr)
+gcl_api int Thread::start(Runnable *Runnable, pthread_attr_t *attr)
 {
     if (is_running()) return EINVAL;
 
     sem_t sem;
     sem_init(&sem, 0, 0);
-    struct __thread_wrapper_data args = { this, runnable, 0, 0, &sem };
+    struct __thread_wrapper_data args = { this, Runnable, 0, 0, &sem };
     int err = pthread_create(&m_t, attr, __thread_wrapper, &args);
     if (!err) sem_wait(&sem);
     return err;
 }
 
-gcl_api int thread::stop(void *retval)
+gcl_api int Thread::stop(void *retval)
 {
     if (is_running()) {
         // if stoppinig other thread, then cancel it
-        thread *current = get_current();
+        Thread *current = get_current();
         if (current != this) {
             // dmsg("EQUAL=%d %p %p\n", pthread_equal(pthread_self(), m_t), current, this);
             int err = pthread_cancel(m_t);
@@ -115,14 +114,14 @@ gcl_api int thread::stop(void *retval)
     return 0;
 }
 
-thread *thread::get_current()
+Thread *Thread::get_current()
 {
     // if __instance_count==0, __key_to_instance is invalid
     return __instance_count==0 ? &__main_thread
-        : (thread *)pthread_getspecific(__key_to_instance);
+        : (Thread *)pthread_getspecific(__key_to_instance);
 }
 
-unsigned thread::get_thread_counts()
+unsigned Thread::get_thread_counts()
 {
     return __instance_count;
 }

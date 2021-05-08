@@ -1,7 +1,7 @@
 //
 //  * ex-que.cpp
 //
-//  OpenGCL Example: queue operations
+//  OpenGCL Example: Queue operations
 //
 
 #include "gque.h"
@@ -18,7 +18,7 @@ typedef struct _vdata {
 
 void que_test()
 {
-    queue<int> q(10);
+    Queue<int> q(10);
     printf("q status: capacity=%d entries=%d rooms=%d\n", q.capacity(), q.length(), q.available());
 
     int count = 0;
@@ -65,7 +65,7 @@ void que_test()
 void step_test()
 {
     //--- inititialize queue entries
-    queue<int> q(10);
+    Queue<int> q(10);
     for (int i=0; i<10; i++) q.put(i);      // add entries
     for (int i=0; i<5; i++) q.get();        // get half of it
     for (int i=10; i<15; i++) q.put(i);     // add again
@@ -103,7 +103,7 @@ void step_test()
 
 void running_test()
 {
-    queue<vdata> q(30);
+    Queue<vdata> q(30);
     vdata val;
 
     int loop_count = 300;

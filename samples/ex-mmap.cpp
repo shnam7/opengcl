@@ -13,7 +13,7 @@
 
 int main()
 {
-    gcl::mmap_file mfile;
+    gcl::MMapFile mfile;
     const char *cp = mfile.mmap_ro("../samples/ex-mmap.cpp");
 
     size_t size = mfile.get_size();

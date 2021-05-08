@@ -12,7 +12,7 @@ namespace gcl {
 
 #define MAX_SEPSARATORS		31	/* actually, null take */
 
-class gcl_api gtockenizer {
+class gcl_api Tockenizer {
 protected:
     const char		*m_head = 0;      // head of target string
 	const char		*m_tail = 0;      // end of target string
@@ -21,10 +21,10 @@ protected:
 	char	        m_sep[MAX_SEPSARATORS+1];  // list of separator characters as string
 
 public:
-	gtockenizer() { m_sep[0] = 0; }
-	gtockenizer(const char *str, const char *sep) { bind(str, sep); }
-	gtockenizer(const char *str, int slen, const char *sep) { bind(str, slen, sep); }
-	~gtockenizer() {}
+	Tockenizer() { m_sep[0] = 0; }
+	Tockenizer(const char *str, const char *sep) { bind(str, sep); }
+	Tockenizer(const char *str, int slen, const char *sep) { bind(str, slen, sep); }
+	~Tockenizer() {}
 
 	//--- manipulatorss
 	bool bind(const char *str, const char *sep=0);
@@ -45,6 +45,3 @@ protected:
 };
 
 } // namespace gcl
-
-
-typedef gcl::gtockenizer    GTokenizer;
