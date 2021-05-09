@@ -120,10 +120,28 @@ void running_test()
     }
 }
 
+void iterator_test() {
+    Queue<int> que(20);
+    for (int i=0; i<20; i++) que.put(i);      // add entries
+
+    printf("Printing -----------\n");
+    Queue<int>::Iterator it = que.begin();
+    while (it != que.end()) {
+        printf("que enrty #%d\n", *it++);
+    }
+
+    printf("Printing revirse-----\n");
+    it = que.rbegin();
+    while (it != que.rend()) {
+        printf("glist add #%d\n", *it--);
+    }
+}
+
 
 int main()
 {
-    que_test();
-//     step_test();
-//     running_test();
+    // que_test();
+    // step_test();
+    // running_test();
+    iterator_test();
 }

@@ -12,10 +12,10 @@ using namespace gcl;
 gcl_api void Linkable::append(Linkable *node)
 {
     if (!node->is_alone()) node->detach();
-    node->m_next = m_next;
-    node->m_prev = this;
-    m_next->m_prev = node;
-    m_next = node;
+    node->m_next = this;
+    node->m_prev = this->m_prev;
+    m_prev->m_next = node;
+    m_prev = node;
 }
 
 gcl_api unsigned Linkable::length() const
