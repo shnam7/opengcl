@@ -2,17 +2,17 @@
 # samples programs
 #------------------------------------------------------------------------------
 set(SAMPLES
-	ex-time.cpp
-    ex-list.cpp
-	ex-que.cpp
-	ex-mmap.cpp
-	ex-tok.cpp
-	ex-sem.cpp
-	ex-thread.cpp
-	ex-pthread.cpp
-	ex-mbox.cpp
 	ex-event.cpp
+    ex-list.cpp
+	ex-mbox.cpp
+	ex-mmap.cpp
+	ex-pthread.cpp
+	ex-que.cpp
+	ex-sem.cpp
 	ex-socket.cpp
+	ex-thread.cpp
+	ex-time.cpp
+	ex-tok.cpp
 )
 
 #--- Build samples

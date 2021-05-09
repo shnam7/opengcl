@@ -15,12 +15,12 @@ int test1()
 {
 	const char *str = "A;B;C:D;E;F;\n";
 	gcl::Tockenizer gtok( str, ";\n" );
-	while ( gtok.hasMoreTokens() )
+	while ( gtok.has_more_tokens() )
 	{
 		char buf[256];
 		char sep;
 		unsigned tokLen=0;
-		if ( !gtok.getNext(buf, sizeof(buf), &sep, &tokLen) )
+		if ( !gtok.get_next(buf, sizeof(buf), &sep, &tokLen) )
 		{
 			printf( "Strange error...! must be bug.\n" );
 			return -1;

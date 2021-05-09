@@ -29,19 +29,19 @@ public:
 	//--- manipulatorss
 	bool bind(const char *str, const char *sep=0);
 	bool bind(const char *str, unsigned slen, const char *sep=0);
-	bool setSeparators(const char *sep);
-	bool getNext(char *buf, unsigned bufSize, char *pSepBy=0, unsigned *pTokenLen=0);
+	bool set_separators(const char *sep);
+	bool get_next(char *buf, unsigned bufSize, char *pSepBy=0, unsigned *pTokenLen=0);
 	void rewind();
 
     //--- accessors
-	bool hasMoreTokens() const { return m_pos < m_tail; }
-	unsigned  getNextTokenLength() const { return (unsigned)(m_end - m_pos); }
-	const char *getTargetString() const { return m_head; }
-    unsigned getTargetStringLength() const { return (unsigned)(m_tail - m_head); }
-    const char *getSeparators() const { return m_sep; }
+	bool has_more_tokens() const { return m_pos < m_tail; }
+	unsigned  get_next_token_length() const { return (unsigned)(m_end - m_pos); }
+	const char *get_target_string() const { return m_head; }
+    unsigned get_target_ttring_length() const { return (unsigned)(m_tail - m_head); }
+    const char *get_separators() const { return m_sep; }
 
 protected:
-    void _findNextToken();
+    void _find_next_token();
 };
 
 } // namespace gcl

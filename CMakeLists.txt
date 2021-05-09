@@ -46,7 +46,7 @@ add_compile_definitions($<$<BOOL:WIN32>:GCL_EXPORTS>)
 add_compile_definitions($<$<BOOL:MINGW>:__USE_MINGW_ANSI_STDIO>)   # fix printf format string warnings
 add_compile_definitions($<$<BOOL:MSVC>:_CRT_SECURE_NO_WARNINGS>)
 add_compile_definitions($<$<BOOL:MSVC>:_WINSOCK_DEPRECATED_NO_WARNINGS>)
-if (BUILD_TYPE STREQUAL "Debug")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(DEBUG _DEBUG)
 endif()
 
@@ -68,17 +68,17 @@ endif()
 # opengcl library
 #------------------------------------------------------------------------------
 set (SRC
-    src/gque.cpp
+    src/gevent.cpp
     src/glist.cpp
 	src/gmmap.cpp
-	src/gsocket.cpp
-	src/gtockenizer.cpp
+	src/gque.cpp
+    src/gsocket.cpp
 	src/gthread.cpp
-    src/gevent.cpp
 	src/gtime.cpp
     src/gtime_sleep.cpp
-	src/util/gutil.cpp
 	src/util/filelength.cpp
+	src/util/gutil.cpp
+	src/gtockenizer.cpp
     $<$<CONFIG:DEBUG>:src/gdmsg.cpp>
     $<$<CONFIG:WIN32>:src/win32/opengcl_dll.cpp>
 )

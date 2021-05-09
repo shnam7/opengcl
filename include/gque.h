@@ -33,12 +33,12 @@ public:
     ~CircularQueue();
 
 	bool init(unsigned capacity, unsigned item_size);
-    void clear() const { if (m_q) { m_q->head = m_q->tail = m_q->begin; } }
+	void clear() const { if (m_q) { m_q->head = m_q->tail = m_q->begin; } }
 
-    bool put(const void *item=0) const;   // append
-	bool get(void *item=0) const;       // pop from head
-    bool push(const void *item=0) const;  // prepend
-	bool pop(void *item=0) const;       // pop from tail
+    bool put(const void *item=0) const;     // append
+	bool get(void *item=0) const;           // pop from head
+    bool push(const void *item=0) const;    // prepend
+	bool pop(void *item=0) const;           // pop from tail
 
     void *first() const { return peek(); }
     void *last() const { return is_empty() ? 0 :
@@ -100,7 +100,6 @@ public:
 	T *begin() const { return (T *)CircularQueue::begin(); }
 	T *end() const { return (T *)CircularQueue::end(); }
 };
-
 
 
 //--------------------------------------------------------------------
