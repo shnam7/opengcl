@@ -99,7 +99,7 @@ int gsock_listen(socket_t sock, ipaddr_t ipAddr, int port, int backlog)
     return 1;
 }
 
-int gsock_read(socket_t sock, char *buf, int n, unsigned long timeout)
+int gsock_read(socket_t sock, char *buf, int n, msec_t timeout)
 {
     int count = recv(sock, buf, n, 0);
     if (count == -1)
@@ -120,14 +120,14 @@ int gsock_read(socket_t sock, char *buf, int n, unsigned long timeout)
             if (__err != EAGAIN) return -1;
         }
         if (count >= n) break;
-        unsigned long tmElapsed = elapsed_msec(tm1);
+        msec_t tmElapsed = elapsed_msec(tm1);
         if (tmElapsed > timeout) break;
         if (!gsock_is_readable(sock, timeout - tmElapsed)) break;
     }
     return count;
 }
 
-int gsock_write(socket_t sock, const char *buf, int n, unsigned long timeout)
+int gsock_write(socket_t sock, const char *buf, int n, msec_t timeout)
 {
     int count = send(sock, buf, n, MSG_DONTWAIT);
     if (count == -1)
@@ -147,7 +147,7 @@ int gsock_write(socket_t sock, const char *buf, int n, unsigned long timeout)
             if (__err != EAGAIN) return -1;
         }
         if (count >= n) break;
-        unsigned long tmElapsed = elapsed_msec(tm1);
+        msec_t tmElapsed = elapsed_msec(tm1);
         if (tmElapsed > timeout) break;
         if (!gsock_is_writable(sock, timeout - tmElapsed)) break;
     }
@@ -200,7 +200,7 @@ int gsock_get_readable_count(socket_t sock)
     return val;
 }
 
-gcl_api int gsock_check_readable(socket_t sock, unsigned long timeout)
+gcl_api int gsock_check_readable(socket_t sock, msec_t timeout)
 {
     int r;
     fd_set fdsRead;
@@ -217,7 +217,7 @@ gcl_api int gsock_check_readable(socket_t sock, unsigned long timeout)
     return FD_ISSET(sock, &fdsRead);
 }
 
-gcl_api int gsock_check_writable(socket_t sock, unsigned long timeout)
+gcl_api int gsock_check_writable(socket_t sock, msec_t timeout)
 {
     int r;
     fd_set fdsWrite;

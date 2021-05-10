@@ -25,6 +25,7 @@
 
 #pragma once
 #include "gcldef.h"
+#include "gtime.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -34,6 +35,8 @@
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #endif
+
+using gcl::msec_t;
 
 #define	GSOCK_TIMEOUT	5000	/* msec */
 
@@ -130,17 +133,17 @@ inline int gsock_send(socket_t sock, const char *buf, int len)
 	{ return send(sock, buf, len, 0); }
 
 gcl_api int gsock_read(socket_t sock, char *buf, int n,
-		unsigned long timeout);
+		msec_t timeout);
 
 gcl_api int gsock_write(socket_t sock, const char *buf,
-		int n, unsigned long timeout);
+		int n, msec_t timeout);
 
 inline int gsock_readn(socket_t sock, void *buf, int n,
-		unsigned long timeout)
+		msec_t timeout)
 	{ return gsock_read(sock, (char *)buf, n, timeout)==n; }
 
 inline int gsock_writen(socket_t sock, const void *buf, int n,
-		unsigned long timeout)
+		msec_t timeout)
 	{ return gsock_write(sock, (const char *)buf, n, timeout)==n; }
 
 #if defined( _WIN32 )
@@ -191,15 +194,15 @@ inline int gsock_get_error(socket_t sock)
 		return err; }
 
 	/* returns -1 on error, positive when readable, 0 otherwise. */
-gcl_api int gsock_check_readable(socket_t sock, unsigned long timeout);
+gcl_api int gsock_check_readable(socket_t sock, msec_t timeout);
 
 	/* returns -1 on error, positive when readable, 0 otherwise. */
-gcl_api int gsock_check_writable(socket_t sock, unsigned long timeout);
+gcl_api int gsock_check_writable(socket_t sock, msec_t timeout);
 
-inline int gsock_is_readable(socket_t sock, unsigned long timeout)
+inline int gsock_is_readable(socket_t sock, msec_t timeout)
 	{ return gsock_check_readable(sock, timeout)>0; }
 
-inline int gsock_is_writable(socket_t sock, unsigned long timeout)
+inline int gsock_is_writable(socket_t sock, msec_t timeout)
 	{ return gsock_check_writable(sock, timeout)>0; }
 
 inline int gsock_setopt_reuse_addr(socket_t sock, int reuse)
@@ -207,20 +210,16 @@ inline int gsock_setopt_reuse_addr(socket_t sock, int reuse)
 			(char *)&reuse, sizeof(int)) == 0; }
 
 /* V protocol support */
-inline int gsock_readvp(socket_t sock, vpacket_t *vp,
-		unsigned long timeout)
+inline int gsock_readvp(socket_t sock, vpacket_t *vp, msec_t timeout)
 	{ return gsock_readn(sock, vp, sizeof(vpacket_t), timeout); }
 
-inline int gsock_writevp(socket_t sock, const vpacket_t *vp,
-		unsigned long timeout)
+inline int gsock_writevp(socket_t sock, const vpacket_t *vp, msec_t timeout)
 	{ return gsock_writen(sock, vp, sizeof(vpacket_t), timeout); }
 
-inline int gsock_writevpn(socket_t sock, const vpacket_t *vp,
-		int len, unsigned long timeout)
+inline int gsock_writevpn(socket_t sock, const vpacket_t *vp, int len, msec_t timeout)
 	{ return gsock_writen(sock, vp, len, timeout); }
 
-inline int gsock_simple_reply(socket_t sock, unsigned int code,
-		unsigned long timeout)
+inline int gsock_simple_reply(socket_t sock, unsigned int code, msec_t timeout)
 {
 	vpacket_t vp = { VPT_REPLY, (unsigned char)code, 0 };
 	return gsock_writevp(sock, &vp, timeout);
@@ -283,24 +282,24 @@ public:
 		{ return gsock_recv(m_sock, buf, len); }
 	int send(const char *buf, int len) const
 		{ return gsock_send(m_sock, buf, len); }
-	int read(char *buf, int n, unsigned long timeout=0) const
+	int read(char *buf, int n, msec_t timeout=0) const
 		{ return gsock_read(m_sock, buf, n, timeout); }
-	int write(const char *buf, int n, unsigned long timeout=0) const
+	int write(const char *buf, int n, msec_t timeout=0) const
 		{ return gsock_write(m_sock, buf, n, timeout); }
-	bool readn(void *buf, int n, unsigned long timeout=5000) const
+	bool readn(void *buf, int n, msec_t timeout=5000) const
 		{ return gsock_readn(m_sock, buf, n, timeout) != 0; }
-	bool writen(const void *buf, int n, unsigned long timeout=5000) const
+	bool writen(const void *buf, int n, msec_t timeout=5000) const
 		{ return gsock_writen(m_sock, buf, n, timeout) != 0; }
 
 	//--- V protocol support
-	bool readvp(vpacket_t *vp, unsigned long timeout=VNET_TIMEOUT) const
+	bool readvp(vpacket_t *vp, msec_t timeout=VNET_TIMEOUT) const
 		{ return gsock_readvp(m_sock, vp, timeout) != 0; }
-	bool writevp(const vpacket_t *vp, unsigned long timeout=VNET_TIMEOUT) const
+	bool writevp(const vpacket_t *vp, msec_t timeout=VNET_TIMEOUT) const
 		{ return gsock_writevp(m_sock, vp, timeout) != 0; }
 	bool writevp(const vpacket_t *vp, int len,
-			unsigned long timeout=VNET_TIMEOUT) const
+			msec_t timeout=VNET_TIMEOUT) const
 		{ return gsock_writevpn(m_sock, vp, len, timeout) != 0; }
-	bool simple_reply(unsigned int code, unsigned long timeout=VNET_TIMEOUT)
+	bool simple_reply(unsigned int code, msec_t timeout=VNET_TIMEOUT)
 	{
 		return gsock_simple_reply(m_sock, code, timeout) != 0;
 	}
@@ -330,13 +329,13 @@ public:
 		{ return gsock_get_readable_count(m_sock); }
 
 	int get_error() const { return gsock_get_error(m_sock); }
-	int check_readable(unsigned long timeout=0) const
+	int check_readable(msec_t timeout=0) const
 		{ return gsock_check_readable(m_sock, timeout); }
-	int check_writable(unsigned long timeout=0) const
+	int check_writable(msec_t timeout=0) const
 		{ return gsock_check_writable(m_sock, timeout); }
-	bool is_readable(unsigned long timeout=0) const
+	bool is_readable(msec_t timeout=0) const
    		{ return gsock_is_readable(m_sock, timeout) != 0; }
-	bool is_writable(unsigned long timeout=0) const
+	bool is_writable(msec_t timeout=0) const
    		{ return gsock_is_writable(m_sock, timeout) != 0; }
 
 	bool setopt_reuse_addr(bool reuse)

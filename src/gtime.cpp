@@ -22,7 +22,7 @@ using namespace gcl;
 
 static int __hpc = 0;   // flag: high precision counter (-1: no hpc, 0: hpc need init, 1: hpc init done)
 static LARGE_INTEGER __pf = { 0, 0 };   // cache for performance frequency
-inline nsec_t _ticks2nsec(tick_t ticks) { return (ticks * 1000000000)/__pf.QuadPart; }
+inline nsec_t _ticks2nsec(tick_t ticks) { return (nsec_t)(((size_t)ticks * 1000000000)/__pf.QuadPart); }
 // inline tick_t _nsec2ticks(tick_t nsec) { return (nsec * __pf.QuadPart) / 1000000000; }
 
 // return tick count as nsec
@@ -31,13 +31,13 @@ gcl_api tick_t gcl::ticks()
     LARGE_INTEGER ticks;
     if (__hpc > 0) {
         QueryPerformanceCounter(&ticks);
-        return _ticks2nsec(ticks.QuadPart);
+        return _ticks2nsec((tick_t)ticks.QuadPart);
     }
     if (__hpc == 0) {
         __hpc = QueryPerformanceFrequency(&__pf) ? 1 : -1;
         if (__hpc > 0) {
             QueryPerformanceCounter(&ticks);
-            return _ticks2nsec(ticks.QuadPart);
+            return _ticks2nsec((tick_t)ticks.QuadPart);
         }
     }
     return ((nsec_t)GetTickCount()) * 1000000;    // return ticks in msec (no hpc available)

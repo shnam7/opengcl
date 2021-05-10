@@ -13,10 +13,10 @@
 namespace gcl
 {
 
-typedef uint64_t        tick_t;   // timer tick count type
-typedef uint64_t        nsec_t;   // nanosec time type
-typedef unsigned long   usec_t;   // microsec time type
-typedef unsigned int    msec_t;   // millisec time type
+typedef size_t   tick_t;   // timer tick count type
+typedef size_t   nsec_t;   // nanosec time type
+typedef size_t   usec_t;   // microsec time type
+typedef size_t   msec_t;   // millisec time type
 
 //--- get time elapsed since system start in nanosec
 gcl_api tick_t ticks();

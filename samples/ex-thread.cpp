@@ -31,9 +31,9 @@ void *foo(void *)
         tick_t tm = ticks();
         msleep(1);
         elapsed = elapsed_ticks(tm);
-        printf("tid=#%05d count=%i tick=%zu elapsed=%u\n", tid, i, tm, ticks_to_msec(elapsed));
+        printf("tid=#%05d count=%i tick=%zu elapsed=%zu\n", tid, i, tm, ticks_to_msec(elapsed));
     }
-    printf("--->thread #%05d finished. elapsed=%umsec\n", tid, elapsed_msec(tm0));
+    printf("--->thread #%05d finished. elapsed=%zu(ms)\n", tid, elapsed_msec(tm0));
     finished++;
     return 0;
 }
