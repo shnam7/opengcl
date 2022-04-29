@@ -13,6 +13,7 @@ set(SAMPLES
 	ex-thread.cpp
 	ex-time.cpp
 	ex-tok.cpp
+	ex-mv_filter.cpp
 )
 
 #--- Build samples

@@ -16,3 +16,4 @@
 #include "gsocket.h"
 #include "gmmap.h"
 #include "gtockenizer.h"
+#include "gmv_filter.h"
