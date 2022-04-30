@@ -52,7 +52,7 @@ public:
     MVFilter(unsigned size) : MVFilterT(size) {}
     ~MVFilter() {}
 
-    // add integer type filter function
+    double filter(double val) { return MVFilterT::filter(val); };
     double filter(long val) { return MVFilterT::filter(static_cast<double>(val)); };
 };
 
