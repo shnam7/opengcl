@@ -6,6 +6,7 @@
 - Improve high precision time functions
 - Redesign Queue, List, EventEmitter
 - Add AutoLock classes
+- Add MVFilter class (Moving average filter)
 
 ## Tested platforms
 - gcc 8.3 (x86 and x64)
