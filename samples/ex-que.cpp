@@ -10,6 +10,39 @@
 
 using namespace gcl;
 
+class TestQueue : public Queue<int> {
+public:
+    TestQueue(int size): Queue(size) {}
+
+    void dump(const char *title="") {
+        if (title) printf("===%s\n", title);
+
+        int count = 0;
+        const int *peeker = Queue::peek();
+        while (peeker) {
+            printf("q[%d] = %d\n", count++, *peeker);
+            peeker = peek_next(peeker);
+        }
+    }
+};
+
+
+// Test standard queue interface
+void test_queue() {
+    TestQueue que(10);
+
+    int loop = 0;
+    int i_count = 10;
+    int o_count = 10;
+    while (loop++ < 10) {
+        for (int i=0; i<o_count; i++) que.get();
+        que.dump("Removed items");
+        for (int i=0; i<i_count; i++) que.put(loop*10 + i+1);
+        que.dump("Added items");
+    }
+}
+
+
 typedef struct _vdata {
     unsigned dataSize;
     char buf[16];
@@ -140,8 +173,10 @@ void iterator_test() {
 
 int main()
 {
+    test_queue();
+
     // que_test();
     // step_test();
     // running_test();
-    iterator_test();
+    // iterator_test();
 }

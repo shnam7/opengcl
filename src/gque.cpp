@@ -46,7 +46,7 @@ bool CircularQueue::init(unsigned capacity, unsigned item_size)
     return true;
 }
 
-// append
+// add to tail (append)
 bool CircularQueue::put(const void *item) const
 {
     if (!m_q) return false;
@@ -58,19 +58,8 @@ bool CircularQueue::put(const void *item) const
 	return true;
 }
 
-// pop from head
-bool CircularQueue::get(void *item) const
-{
-    if (!m_q || m_q->head == m_q->tail ) return false;  // empty
-
-    if (item) memcpy(item, _ptr(m_q->head), m_q->item_size);
-	m_q->head += m_q->item_size;
-	if ( m_q->head == m_q->end ) m_q->head = m_q->begin;
-    return true;
-}
-
-// prepend
-bool CircularQueue::push(const void *item) const
+// add to head (prepend)
+bool CircularQueue::shift(const void *item) const
 {
     if (!m_q) return false;
 	unsigned pos = m_q->head - m_q->item_size;
@@ -81,7 +70,18 @@ bool CircularQueue::push(const void *item) const
 	return true;
 }
 
-// pop from tail
+// remove from head
+bool CircularQueue::unshift(void *item) const
+{
+    if (!m_q || m_q->head == m_q->tail ) return false;  // empty
+
+    if (item) memcpy(item, _ptr(m_q->head), m_q->item_size);
+	m_q->head += m_q->item_size;
+	if ( m_q->head == m_q->end ) m_q->head = m_q->begin;
+    return true;
+}
+
+// remove from tail
 bool CircularQueue::pop(void *item) const
 {
     if (!m_q || m_q->head == m_q->tail ) return false;  // empty

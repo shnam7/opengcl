@@ -35,10 +35,17 @@ public:
 	bool init(unsigned capacity, unsigned item_size);
 	void clear() const { if (m_q) { m_q->head = m_q->tail = m_q->begin; } }
 
-    bool put(const void *item=0) const;     // append
-	bool get(void *item=0) const;           // pop from head
-    bool push(const void *item=0) const;    // prepend
-	bool pop(void *item=0) const;           // pop from tail
+    // queue standard operation
+    bool put(const void *item=0) const;     // add to tail (append)
+	bool get(void *item=0) const { return unshift(item); }      // remove from head
+
+    // stack operation
+    bool push(const void *item=0) const { return put(item); }   // add to tail (append)
+	bool pop(void *item=0) const;           // remove from tail
+
+    // javascript list equivalent
+    bool shift(const void *item=0) const;    // add to head (prepend)
+	bool unshift(void *item=0) const;        // remove from head
 
     void *first() const { return peek(); }
     void *last() const { return is_empty() ? 0 :
@@ -77,16 +84,25 @@ public:
 
     bool init(unsigned capacity) { return CircularQueue::init(capacity, sizeof(T)); };
 
+    // queue standard operation
 	bool put(const T *item=0) const { return CircularQueue::put(item); }
 	bool get(T *item=0) const { return CircularQueue::get(item); }
+
+    // stack operation
 	bool push(const T *item=0) const { return CircularQueue::push(item); }
 	bool pop(T *item=0) const { return CircularQueue::pop(item); }
+
+    // javascript list equivalent
+    bool shift(const T *item=0) const { return CircularQueue::shift(item); }
+	bool unshift(T *item=0) const { return CircularQueue::unshift(item); }
 
     //--- support reference type interface
     bool put(const T &item) const { return put(&item); }
 	bool get(T &item) const { return get(&item); }
 	bool push(const T &item) const { return push(&item); }
 	bool pop(T &item) const { return pop(&item); }
+	bool shift(const T &item) const { return shift(&item); }
+	bool unshift(T &item) const { return unshift(&item); }
 
     T *first() const { return (T *)CircularQueue::first(); }
     T *last() const { return (T *)CircularQueue::last(); }
@@ -140,10 +156,17 @@ public:
     bool init(unsigned capacity) { AutoLockWrite lock(m_lock); return Queue<T>::init(capacity, sizeof(T)); };
     void clear() const { AutoLockWrite lock(m_lock); Queue<T>::clear(); }
 
+    // queue standard operation
     bool put(const T *item=0) { AutoLockWrite lock(m_lock); return Queue<T>::put(item); }
     bool get(T *item=0) { AutoLockWrite lock(m_lock); return Queue<T>::get(item); }
+
+    // stack operation
     bool push(const T *item=0) { AutoLockWrite lock(m_lock); return Queue<T>::push(item); }
 	bool pop(T *item=0) { AutoLockWrite lock(m_lock); return Queue<T>::get(item); };
+
+    // javascript list equivalent
+    bool shift(const T *item=0) { AutoLockWrite lock(m_lock); return Queue<T>::shift(item); }
+	bool unshift(T *item=0) { AutoLockWrite lock(m_lock); return Queue<T>::unshift(item); };
 
     //--- support reference type interface
     bool put(const T &item) { return put(&item); }
